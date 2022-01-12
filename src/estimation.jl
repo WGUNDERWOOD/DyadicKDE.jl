@@ -1,10 +1,3 @@
-#using LinearAlgebra
-#using Distributions
-#using Statistics
-#using Convex
-#using Mosek
-#using MosekTools
-
 Base.@kwdef mutable struct DyadicKernelDensityEstimator
 
     # input parameters
@@ -26,6 +19,9 @@ Base.@kwdef mutable struct DyadicKernelDensityEstimator
     fhat::Vector{Float64}
     Sigmahat::Symmetric{Float64}
     Sigmahatplus::Symmetric{Float64}
+    eigmin_Sigmahat::Float64
+    eigmin_Sigmahatplus::Float64
+    sdp_error::Float64
     ucb::Array{Float64, 2}
     pci::Array{Float64, 2}
     bci::Array{Float64, 2}
@@ -68,6 +64,9 @@ function DyadicKernelDensityEstimator(
         fill(NaN, (n_evals)),
         Symmetric(fill(NaN, (n_evals, n_evals))),
         Symmetric(fill(NaN, (n_evals, n_evals))),
+        NaN,
+        NaN,
+        NaN,
         fill(NaN, (2, n_evals)),
         fill(NaN, (2, n_evals)),
         fill(NaN, (2, n_evals)),
@@ -293,50 +292,60 @@ function estimate_Sigmahat(est::DyadicKernelDensityEstimator)
     end
 
     est.Sigmahat = Symmetric(Sigmahat)
+    est.eigmin_Sigmahat = eigmin(est.Sigmahat)
 
-    # TODO Sigmahat eigmin
-    #estimator.min_eig_Sigmahat = eigmin(estimator.Sigmahat)
+end
 
+
+
+
+function matrix_lipschitz_number(mat::Symmetric{Float64}, v::Vector{Float64})
+
+    @assert size(mat, 1) == length(v)
+    steps = diff(mat, dims=1) ./ diff(v)
+    return maximum(steps)
 end
 
 
 
 function estimate_Sigmahatplus(est::DyadicKernelDensityEstimator)
 
-    min_eig_Sigmahat = eigmin(est.Sigmahat)
-
-    if min_eig_Sigmahat >= 0
+    if est.eigmin_Sigmahat >= 0
+        # do nothing if already psd
         est.Sigmahatplus = est.Sigmahat
 
-    elseif est.sdp_solver == "mosek"
+    else
+        # formulate optimization problem
         d = diag(est.Sigmahat)
-        display(d)
         sinv = 1 ./ sqrt.(d .+ d')
         C = Semidefinite(est.n_evals)
         objective = maximum(abs(sinv .* (C - est.Sigmahat)))
         problem = minimize(objective)
-        solve!(problem, Mosek.Optimizer, silent_solver=true)
+
+        # solve optimization problem
+        if est.sdp_solver == "mosek"
+            solve!(problem, Mosek.Optimizer, silent_solver=true)
+        elseif est.sdp_solver == "cosmo"
+            solve!(problem, COSMO.Optimizer, silent_solver=true)
+        else
+            error("unknown sdp_solver")
+        end
+
+        # get answer
         Sigmahatplus = Symmetric(evaluate(C))
         mineig_optsol = max(-eigmin(Sigmahatplus), 0)
         est.Sigmahatplus = Symmetric(Sigmahatplus + 2 * mineig_optsol * I)
 
+        # check lipschitz property
         n = est.n_data
         h = est.bandwidth
-        # TODO test
         L = matrix_lipschitz_number(est.Sigmahatplus, est.evals)
         @assert L <= 4 / (n * h^3)
 
-    else
-        error("unknown sdp_solver")
     end
 
-    # TODO open source solver
-
-    # TODO psd_error
-    #est.psd_error = maximum(abs.(est.Sigmahatplus - est.Sigmahat))
-
-    # TODO Sigmahatplus eigmin
-    #est.min_eig_Sigmahatplus = eigmin(est.Sigmahatplus)
+    est.eigmin_Sigmahatplus = eigmin(est.Sigmahatplus)
+    est.sdp_error = maximum(abs.(est.Sigmahatplus - est.Sigmahat))
 
 end
 
@@ -383,7 +392,7 @@ end
 
 
 
-function estimate_pointwise_confidence_band(est::DyadicKernelDensityEstimator)
+function estimate_pointwise_confidence_intervals(est::DyadicKernelDensityEstimator)
 
     for k in 1:est.n_evals
 
@@ -401,7 +410,7 @@ end
 
 
 
-function estimate_bonferroni_confidence_band(est::DyadicKernelDensityEstimator)
+function estimate_bonferroni_confidence_intervals(est::DyadicKernelDensityEstimator)
 
     bonferroni_significance_level = est.significance_level / est.n_evals
 
@@ -465,45 +474,14 @@ function estimate_ROT_bandwidth(data::UpperTriangular{Float64},
 end
 
 
-#=
 
-# TODO
+function fit(est::DyadicKernelDensityEstimator)
 
-function fit(
-    params::Dict,
-    estimator::DyadicKernelDensityEstimator,
-    data::DyadicData,
-    evals::DyadicEvaluationPoints)
+    estimate_fhat(est)
+    estimate_Sigmahat(est)
+    estimate_Sigmahatplus(est)
+    estimate_uniform_confidence_band(est)
+    estimate_pointwise_confidence_intervals(est)
+    estimate_bonferroni_confidence_intervals(est)
 
-    if params["kernel_name"] == "epanechnikov_order_2"
-        estimate_epanechnikov_ROT_bandwidth(estimator, data)
-
-    elseif params["kernel_name"] == "epanechnikov_order_4"
-        # TODO this is not ideal but works
-        estimate_epanechnikov_ROT_bandwidth(estimator, data)
-    end
-
-    if params["bandwidth"] == "ROT"
-        params["bandwidth"] = estimator.bandwidth_ROT
-        estimator.bandwidth = estimator.bandwidth_ROT
-    end
-
-    estimate_fhat(estimator, data, evals)
-
-    if params["fit_type"] == "partial"
-        nothing
-
-    elseif params["fit_type"] == "full"
-        estimate_Sigmahat(estimator, data, evals)
-        estimate_Sigmahatplus(params, estimator, data, evals)
-        estimate_uniform_confidence_band(estimator, data, evals)
-        estimate_pointwise_confidence_band(estimator, data, evals)
-        estimate_bonferroni_confidence_band(estimator, data, evals)
-
-    else
-        error("invalid fit_type")
-
-    end
 end
-
-=#
