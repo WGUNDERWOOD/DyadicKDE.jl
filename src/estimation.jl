@@ -12,10 +12,17 @@ Base.@kwdef mutable struct DyadicKernelDensityEstimator
     bandwidth::Float64
     significance_level::Float64
     n_resample::Int
+    sdp_solver::String
     evals::Vector{Float64}
     data::UpperTriangular{Float64}
 
     # final products
+    n_evals::Int
+    evals_min::Float64
+    evals_max::Float64
+    n_data::Int
+    N_data::Int
+    data_vec::Vector{Float64}
     fhat::Vector{Float64}
     Sigmahat::Symmetric{Float64}
     Sigmahatplus::Symmetric{Float64}
@@ -32,23 +39,32 @@ function DyadicKernelDensityEstimator(
     bandwidth::Float64,
     significance_level::Float64,
     n_resample::Int,
+    sdp_solver::String,
     evals::Vector{Float64},
     data::UpperTriangular{Float64})
 
     n_evals = length(evals)
     n_data = size(data, 1)
+    N_data = Int(n_data * (n_data - 1) // 2)
 
-    estimator = DyadicKernelDensityEstimator(
+    est = DyadicKernelDensityEstimator(
 
         # input parameters
-        kernel_name::String,
-        bandwidth::Float64,
-        significance_level::Float64,
-        n_resample::Int,
-        evals::Vector{Float64},
-        data::UpperTriangular{Float64},
+        kernel_name,
+        bandwidth,
+        significance_level,
+        n_resample,
+        sdp_solver,
+        evals,
+        data,
 
         # final products
+        n_evals,
+        minimum(evals),
+        maximum(evals),
+        n_data,
+        N_data,
+        fill(NaN, (N_data)),
         fill(NaN, (n_evals)),
         Symmetric(fill(NaN, (n_evals, n_evals))),
         Symmetric(fill(NaN, (n_evals, n_evals))),
@@ -57,24 +73,22 @@ function DyadicKernelDensityEstimator(
         fill(NaN, (2, n_evals)),
     )
 
-    return estimator
+    index = 1
+    for i in 1:n_data
+        for j in 1:n_data
+            if i < j
+                est.data_vec[index] = est.data[i,j]
+                index += 1
+            end
+        end
+    end
+
+    return est
 
 end
 
 
-#=
 
-
-
-function DyadicKernelDensityEstimator(params::Dict,
-    data::DyadicData, evals::DyadicEvaluationPoints)
-
-    estimator = DyadicKernelDensityEstimator(params)
-    fit(params, estimator, data, evals)
-
-    return estimator
-
-end
 
 
 
@@ -185,77 +199,65 @@ end
 
 
 
-function estimate_fhat(
-    estimator::DyadicKernelDensityEstimator,
-    data::DyadicData,
-    evals::DyadicEvaluationPoints)
+function estimate_fhat(est::DyadicKernelDensityEstimator)
 
-    for k in 1:evals.n_evals
+    for k in 1:est.n_evals
 
-        estimator.fhat[k] = sum(kernel.(data.W_vec, evals.w[k], estimator.bandwidth,
-                                        evals.w_min, evals.w_max, estimator.kernel_name))
-        estimator.fhat[k] /= data.N_data
+        est.fhat[k] = sum(kernel.(est.data_vec, est.evals[k], est.bandwidth,
+                                  est.evals_min, est.evals_max, est.kernel_name))
+
+        est.fhat[k] /= est.N_data
     end
+
 end
 
 
 
-function estimate_conditional_expectation(
-    estimator::DyadicKernelDensityEstimator,
-    data::DyadicData,
-    evals::DyadicEvaluationPoints)
+function estimate_conditional_expectation(est::DyadicKernelDensityEstimator)
 
-    cond_exp = zeros((evals.n_evals, data.n_data))
+    cond_exp = zeros((est.n_evals, est.n_data))
 
-    for k in 1:evals.n_evals
+    for k in 1:est.n_evals
 
-        for i in 1:data.n_data
-            for j in 1:data.n_data
+        for i in 1:est.n_data
+            for j in 1:est.n_data
 
                 if i < j
-                    if abs(data.W[i,j] - evals.w[k]) <= estimator.bandwidth
-                        cond_exp[k,i] += kernel(data.W[i,j], evals.w[k],
-                                                estimator.bandwidth, evals.w_min, evals.w_max,
-                                                estimator.kernel_name)
+                    if abs(est.data[i,j] - est.evals[k]) <= est.bandwidth
+                        cond_exp[k,i] += kernel(est.data[i,j], est.evals[k], est.bandwidth,
+                                                est.evals_min, est.evals_max, est.kernel_name)
                     end
 
                 elseif j < i
-                    if abs(data.W[j,i] - evals.w[k]) <= estimator.bandwidth
-                        cond_exp[k,i] += kernel(data.W[j,i], evals.w[k],
-                                                estimator.bandwidth, evals.w_min, evals.w_max,
-                                                estimator.kernel_name)
+                    if abs(est.data[j,i] - est.evals[k]) <= est.bandwidth
+                        cond_exp[k,i] += kernel(est.data[j,i], est.evals[k], est.bandwidth,
+                                                est.evals_min, est.evals_max, est.kernel_name)
                     end
-
                 end
             end
-
         end
-
     end
 
-    cond_exp /= (data.n_data - 1)
+    cond_exp /= (est.n_data - 1)
 
     return cond_exp
 end
 
 
 
-function estimate_Sigmahat(
-    estimator::DyadicKernelDensityEstimator,
-    data::DyadicData,
-    evals::DyadicEvaluationPoints)
+function estimate_Sigmahat(est::DyadicKernelDensityEstimator)
 
-    n = data.n_data
+    n = est.n_data
 
-    Sigmahat = zeros((evals.n_evals, evals.n_evals))
-    term1 = zeros((evals.n_evals, evals.n_evals))
-    term2 = zeros((evals.n_evals, evals.n_evals))
-    term3 = zeros((evals.n_evals, evals.n_evals))
+    Sigmahat = zeros((est.n_evals, est.n_evals))
+    term1 = zeros((est.n_evals, est.n_evals))
+    term2 = zeros((est.n_evals, est.n_evals))
+    term3 = zeros((est.n_evals, est.n_evals))
 
-    cond_exp = estimate_conditional_expectation(estimator, data, evals)
+    cond_exp = estimate_conditional_expectation(est)
 
-    for w1 in 1:evals.n_evals
-        for w2 in 1:evals.n_evals
+    for w1 in 1:est.n_evals
+        for w2 in 1:est.n_evals
 
             # Si Si' term
             for i in 1:n
@@ -264,23 +266,24 @@ function estimate_Sigmahat(
             term1[w1,w2] *= (4 / (n^2))
 
             # kij kij' term
-            w_w1 = evals.w[w1]
-            w_w2 = evals.w[w2]
+            w_w1 = est.evals[w1]
+            w_w2 = est.evals[w2]
 
-            if abs(w_w1 - w_w2) <= 2 * estimator.bandwidth
-                for i in 1:data.N_data
+            if abs(w_w1 - w_w2) <= 2 * est.bandwidth
+                for i in 1:est.N_data
+                    s = est.data_vec[i]
                     term2[w1,w2] +=
-                        kernel(data.W_vec[i], w_w1, estimator.bandwidth, evals.w_min,
-                               evals.w_max, estimator.kernel_name) *
-                        kernel(data.W_vec[i], w_w2, estimator.bandwidth, evals.w_min,
-                               evals.w_max, estimator.kernel_name)
+                        kernel(s, w_w1, est.bandwidth, est.evals_min,
+                               est.evals_max, est.kernel_name) *
+                        kernel(s, w_w2, est.bandwidth, est.evals_min,
+                               est.evals_max, est.kernel_name)
                 end
             end
 
             term2[w1,w2] *= (4 / (n^2 * (n - 1)^2))
 
             # fhat fhat' term
-            term3[w1,w2] += estimator.fhat[w1] * estimator.fhat[w2]
+            term3[w1,w2] += est.fhat[w1] * est.fhat[w2]
             term3[w1,w2] *= (4 * n - 6) / (n * (n - 1))
 
             # combine terms
@@ -289,88 +292,77 @@ function estimate_Sigmahat(
         end
     end
 
-    estimator.Sigmahat = Symmetric(Sigmahat)
-    estimator.min_eig_Sigmahat = minimum(eigen(estimator.Sigmahat).values)
+    est.Sigmahat = Symmetric(Sigmahat)
+
+    # TODO Sigmahat eigmin
+    #estimator.min_eig_Sigmahat = eigmin(estimator.Sigmahat)
 
 end
 
 
 
-function estimate_Sigmahatplus(
-    params::Dict,
-    estimator::DyadicKernelDensityEstimator,
-    data::DyadicData,
-    evals::DyadicEvaluationPoints)
+function estimate_Sigmahatplus(est::DyadicKernelDensityEstimator)
 
-    min_eig_Sigmahat = eigmin(estimator.Sigmahat)
-
-    if min_eig_Sigmahat < 0
-        if params["verbose"]
-            println("Sigmahat not PSD...")
-        end
-    end
+    min_eig_Sigmahat = eigmin(est.Sigmahat)
 
     if min_eig_Sigmahat >= 0
-        estimator.Sigmahatplus = estimator.Sigmahat
+        est.Sigmahatplus = est.Sigmahat
 
-    elseif estimator.psd_method == "sdp"
-        d = diag(estimator.Sigmahat)
+    elseif est.sdp_solver == "mosek"
+        d = diag(est.Sigmahat)
+        display(d)
         sinv = 1 ./ sqrt.(d .+ d')
-        C = Semidefinite(evals.n_evals)
-        objective = maximum(abs(sinv .* (C - estimator.Sigmahat)))
+        C = Semidefinite(est.n_evals)
+        objective = maximum(abs(sinv .* (C - est.Sigmahat)))
         problem = minimize(objective)
         solve!(problem, Mosek.Optimizer, silent_solver=true)
         Sigmahatplus = Symmetric(evaluate(C))
         mineig_optsol = max(-eigmin(Sigmahatplus), 0)
-        estimator.Sigmahatplus = Symmetric(Sigmahatplus + 2 * mineig_optsol * I)
+        est.Sigmahatplus = Symmetric(Sigmahatplus + 2 * mineig_optsol * I)
 
-        n = params["n_data"]
-        h = params["bandwidth"]
-        L = matrix_lipschitz_number(estimator.Sigmahatplus, evals.w)
+        n = est.n_data
+        h = est.bandwidth
+        # TODO test
+        L = matrix_lipschitz_number(est.Sigmahatplus, est.evals)
         @assert L <= 4 / (n * h^3)
 
     else
-        error("unknown psd_method")
+        error("unknown sdp_solver")
     end
 
+    # TODO open source solver
 
-    # psd_error
-    estimator.psd_error = maximum(abs.(estimator.Sigmahatplus - estimator.Sigmahat))
+    # TODO psd_error
+    #est.psd_error = maximum(abs.(est.Sigmahatplus - est.Sigmahat))
 
-    # Sigmahatplus eigmin
-    estimator.min_eig_Sigmahatplus = eigmin(estimator.Sigmahatplus)
-
-    if params["verbose"]
-
-        println("PSD maximum norm error:")
-        println(maximum(abs.(estimator.Sigmahatplus - estimator.Sigmahat)))
-
-        println("Minimum eigenvalue of Sigmahat:")
-        println(minimum(eigen(estimator.Sigmahat).values))
-
-        println("Minimum eigenvalue of Sigmahatplus:")
-        println(minimum(eigen(estimator.Sigmahatplus).values))
-
-    end
-
+    # TODO Sigmahatplus eigmin
+    #est.min_eig_Sigmahatplus = eigmin(est.Sigmahatplus)
 
 end
 
 
 
-function estimate_uniform_confidence_band(
-    estimator::DyadicKernelDensityEstimator,
-    data::DyadicData,
-    evals::DyadicEvaluationPoints)
+function get_quantile(A::Vector, q::Real)
+
+    sorted_A = sort(A)
+    idx = round(Int, length(A) * q)
+    quantile = sorted_A[idx]
+
+    return quantile
+end
+
+
+
+function estimate_uniform_confidence_band(est::DyadicKernelDensityEstimator)
 
     # make GP distribution and scaling
-    gp_mu = zeros((evals.n_evals))
-    gp = MvNormal(gp_mu, estimator.Sigmahatplus)
-    Sigmahatplus_diag_sqrt = sqrt.(diag(estimator.Sigmahatplus))
+    gp_mu = zeros((est.n_evals))
+    gp = MvNormal(gp_mu, est.Sigmahatplus)
+    Sigmahatplus_diag_sqrt = sqrt.(diag(est.Sigmahatplus))
 
-    sup_scaled_gps = zeros((estimator.n_resample))
+    sup_scaled_gps = zeros((est.n_resample))
 
-    for rep in 1:estimator.n_resample
+    for rep in 1:est.n_resample
 
         # sample and scale gp
         Z_hat = rand(gp)
@@ -382,29 +374,26 @@ function estimate_uniform_confidence_band(
     end
 
     # get quantile
-    c = get_quantile(sup_scaled_gps, 1 - estimator.significance_level)
+    c = get_quantile(sup_scaled_gps, 1-est.significance_level)
     ucb_width = c .* Sigmahatplus_diag_sqrt
-    estimator.ucb[1,:] .= estimator.fhat .- ucb_width
-    estimator.ucb[2,:] .= estimator.fhat .+ ucb_width
+    est.ucb[1,:] .= est.fhat .- ucb_width
+    est.ucb[2,:] .= est.fhat .+ ucb_width
 
 end
 
 
 
-function estimate_pointwise_confidence_band(
-    estimator::DyadicKernelDensityEstimator,
-    data::DyadicData,
-    evals::DyadicEvaluationPoints)
+function estimate_pointwise_confidence_band(est::DyadicKernelDensityEstimator)
 
-    for k in 1:evals.n_evals
+    for k in 1:est.n_evals
 
-        w = evals.w[k]
-        variance = estimator.Sigmahatplus[k,k]
+        w = est.evals[k]
+        variance = est.Sigmahatplus[k,k]
         normal = Normal(0.0, sqrt(variance))
-        q = Statistics.quantile(normal, 1-(estimator.significance_level/2))
+        q = Statistics.quantile(normal, 1-(est.significance_level/2))
 
-        estimator.pcb[1,k] = estimator.fhat[k] - q
-        estimator.pcb[2,k] = estimator.fhat[k] + q
+        est.pci[1,k] = est.fhat[k] - q
+        est.pci[2,k] = est.fhat[k] + q
 
     end
 
@@ -412,22 +401,19 @@ end
 
 
 
-function estimate_bonferroni_confidence_band(
-    estimator::DyadicKernelDensityEstimator,
-    data::DyadicData,
-    evals::DyadicEvaluationPoints)
+function estimate_bonferroni_confidence_band(est::DyadicKernelDensityEstimator)
 
-    bonferroni_significance_level = estimator.significance_level / evals.n_evals
+    bonferroni_significance_level = est.significance_level / est.n_evals
 
-    for k in 1:evals.n_evals
+    for k in 1:est.n_evals
 
-        w = evals.w[k]
-        variance = estimator.Sigmahatplus[k,k]
+        w = est.evals[k]
+        variance = est.Sigmahatplus[k,k]
         normal = Normal(0.0, sqrt(variance))
         q = Statistics.quantile(normal, 1-(bonferroni_significance_level/2))
 
-        estimator.bcb[1,k] = estimator.fhat[k] - q
-        estimator.bcb[2,k] = estimator.fhat[k] + q
+        est.bci[1,k] = est.fhat[k] - q
+        est.bci[2,k] = est.fhat[k] + q
 
     end
 
@@ -435,29 +421,53 @@ end
 
 
 
-function estimate_epanechnikov_ROT_bandwidth(
-    estimator::DyadicKernelDensityEstimator,
-    data::DyadicData)
+function estimate_ROT_bandwidth(data::UpperTriangular{Float64},
+                                kernel_name::String)
 
-    # sigmahat_W
-    mean_W = sum(data.W_vec) / data.N_data
-    sum_of_squares_W = sum((data.W_vec .- mean_W).^2)
-    sigmahat_W_squared = sum_of_squares_W / (data.N_data - 1)
-    sigmahat_W = sqrt(sigmahat_W_squared)
+    # get data_vec
+    n_data = size(data, 1)
+    N_data = Int(n_data * (n_data - 1) // 2)
+    data_vec = fill(NaN, (N_data))
+    index = 1
 
-    # IQRhat
-    upper_quartile = get_quantile(data.W_vec, 0.75)
-    lower_quartile = get_quantile(data.W_vec, 0.25)
-    IQRhat = upper_quartile - lower_quartile
+    for i in 1:n_data
+        for j in 1:n_data
+            if i < j
+                data_vec[index] = data[i,j]
+                index += 1
+            end
+        end
+    end
 
-    # n_rate
-    n_rate = data.N_data^(-1/5)
 
-    estimator.bandwidth_ROT = 2.435 * min(sigmahat_W, IQRhat / 1.349) * n_rate
+    if kernel_name == "epanechnikov_order_2"
+
+        # sigmahat_W
+        mean_W = sum(data) / N_data
+        sum_of_squares_W = sum((data_vec .- mean_W).^2)
+        sigmahat_W_squared = sum_of_squares_W / (N_data - 1)
+        sigmahat_W = sqrt(sigmahat_W_squared)
+
+        # IQRhat
+        upper_quartile = get_quantile(data_vec, 0.75)
+        lower_quartile = get_quantile(data_vec, 0.25)
+        IQRhat = upper_quartile - lower_quartile
+
+        # n_rate
+        n_rate = N_data^(-1/5)
+
+        return 2.435 * min(sigmahat_W, IQRhat / 1.349) * n_rate
+
+    else
+        error("unknown kernel_name")
+    end
 
 end
 
 
+#=
+
+# TODO
 
 function fit(
     params::Dict,
