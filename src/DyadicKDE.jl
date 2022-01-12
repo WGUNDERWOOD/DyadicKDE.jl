@@ -1,5 +1,8 @@
 module DyadicKDE
 
-# Write your package code here.
+using LinearAlgebra
+
+export fit
+include("estimation.jl")
 
 end
