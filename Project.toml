@@ -12,11 +12,14 @@ Mosek = "6405355b-0ac2-5fba-af84-adbd65488c0e"
 MosekTools = "1ec41992-ff65-5c91-ac43-2df89e9693a4"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
-UnicodePlots = "b8865327-cd53-5732-bb35-84acbb429228"
 
 [compat]
-Mosek = "1"
 julia = "1"
+COSMO = "0.8"
+Convex = "0.14"
+Distributions = "0.25"
+Mosek = "1"
+MosekTools = "0.9"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
