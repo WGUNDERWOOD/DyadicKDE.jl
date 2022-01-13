@@ -8,6 +8,7 @@ Base.@kwdef mutable struct DyadicKernelDensityEstimator
     sdp_solver::String
     evals::Vector{Float64}
     data::UpperTriangular{Float64}
+    meta::Dict
 
     # final products
     n_evals::Int
@@ -37,7 +38,8 @@ function DyadicKernelDensityEstimator(
     n_resample::Int,
     sdp_solver::String,
     evals::Vector{Float64},
-    data::UpperTriangular{Float64})
+    data::UpperTriangular{Float64},
+    meta::Dict)
 
     n_evals = length(evals)
     n_data = size(data, 1)
@@ -53,6 +55,7 @@ function DyadicKernelDensityEstimator(
         sdp_solver,
         evals,
         data,
+        meta,
 
         # final products
         n_evals,
