@@ -27,8 +27,6 @@ using Random
 
         fit(est)
 
-        @test est.eigmin_Sigmahatplus >= 0
-
     end
 
 end

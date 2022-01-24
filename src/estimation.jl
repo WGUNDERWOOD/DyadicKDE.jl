@@ -243,6 +243,7 @@ function estimate_Sigmahatplus(est::DyadicKernelDensityEstimator)
 
     est.eigmin_Sigmahatplus = eigmin(est.Sigmahatplus)
     est.sdp_error = maximum(abs.(est.Sigmahatplus - est.Sigmahat))
+    @assert est.eigmin_Sigmahatplus >= 0
 
 end
 
