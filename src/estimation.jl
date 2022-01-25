@@ -1,3 +1,4 @@
+"Composite type for the dyadic kernel density estimator"
 Base.@kwdef mutable struct DyadicKernelDensityEstimator
 
 # input parameters
@@ -31,6 +32,7 @@ end
 
 
 
+"Construct a dyadic kernel density estimator"
 function DyadicKernelDensityEstimator(
     kernel_name::String,
     bandwidth::Float64,
@@ -40,6 +42,10 @@ function DyadicKernelDensityEstimator(
     evals::Vector{Float64},
     data::UpperTriangular{Float64},
     meta::Dict)
+
+    @assert bandwidth > 0
+    @assert 0 <= significance_level <= 1
+    @assert n_resample >= 1
 
     n_evals = length(evals)
     n_data = size(data, 1)
@@ -88,10 +94,6 @@ function DyadicKernelDensityEstimator(
     return est
 
 end
-
-
-
-
 
 
 
@@ -195,7 +197,6 @@ end
 
 
 
-
 function matrix_lipschitz_number(mat::Symmetric{Float64}, v::Vector{Float64})
 
     @assert size(mat, 1) == length(v)
@@ -249,7 +250,7 @@ end
 
 
 
-function get_quantile(A::Vector, q::Real)
+function get_quantile(A::Vector{<:Real}, q::Real)
 
     sorted_A = sort(A)
     idx = round(Int, length(A) * q)
@@ -328,6 +329,7 @@ end
 
 
 
+"Estimate a rule-of-thumb bandwidth from dyadic data"
 function estimate_ROT_bandwidth(data::UpperTriangular{Float64},
                                 kernel_name::String)
 
@@ -373,6 +375,7 @@ end
 
 
 
+"Fit a dyadic kernel density estimator"
 function fit(est::DyadicKernelDensityEstimator)
 
     estimate_fhat(est)
@@ -386,6 +389,7 @@ end
 
 
 
+"Display a dyadic kernel density estimator"
 function Base.display(est::DyadicKernelDensityEstimator)
 
     println("DyadicKernelDensityEstimator")
