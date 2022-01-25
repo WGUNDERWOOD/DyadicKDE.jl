@@ -5,7 +5,7 @@ using Random
 @testset "small_example" begin
 
     # specify parameters
-    n_data = 100
+    n_data = 50
     kernel_names = ["epanechnikov_order_2", "epanechnikov_order_4"]
     evals = collect(range(-2.0, stop=2.0, length=20))
     sdp_solver = "cosmo"

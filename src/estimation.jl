@@ -1,6 +1,6 @@
 Base.@kwdef mutable struct DyadicKernelDensityEstimator
 
-    # input parameters
+# input parameters
     kernel_name::String
     bandwidth::Float64
     significance_level::Float64
@@ -381,5 +381,28 @@ function fit(est::DyadicKernelDensityEstimator)
     estimate_uniform_confidence_band(est)
     estimate_pointwise_confidence_intervals(est)
     estimate_bonferroni_confidence_intervals(est)
+
+end
+
+
+
+function Base.display(est::DyadicKernelDensityEstimator)
+
+    println("DyadicKernelDensityEstimator")
+    println("----------------------------")
+
+    println("Kernel: ", est.kernel_name)
+    println("Bandwidth: ", est.bandwidth)
+    println("Significance level: ", est.significance_level)
+    println("Num. GP resamples: ", est.n_resample)
+    println("SDP solver: ", est.sdp_solver)
+    println("Num. data nodes (n): ", est.n_data)
+    println("Num. data points (N): ", est.N_data)
+    println("Num. evaluation points: ", est.n_evals)
+    println("Min. evaluation point: ", est.evals_min)
+    println("Max. evaluation point: ", est.evals_max)
+    println("Min. eigval of Sigmahat: ", est.eigmin_Sigmahat)
+    println("Min. eigval of Sigmahatplus: ", est.eigmin_Sigmahatplus)
+    println("SDP error: ", est.sdp_error)
 
 end

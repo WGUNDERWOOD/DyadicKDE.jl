@@ -8,9 +8,7 @@ Dyadic kernel density estimation in Julia.
 
 This repository provides a Julia package which implements the methods for
 dyadic kernel density estimation detailed in
-[Cattaneo, Feng and Underwood, 2022],
-which is available at
-[arxiv:2201.05967](https://arxiv.org/abs/2201.05967).
+[Cattaneo, Feng and Underwood, 2022](https://arxiv.org/abs/2201.05967).
 In particular, the package provides the capability for computing:
 
 - Point estimates of a dyadic density function
@@ -57,7 +55,7 @@ using DyadicKDE
 # specify parameters
 n_data = 100
 kernel_name = "epanechnikov_order_2"
-evals = collect(range(-2.0, stop=2.0, length=20))
+evals = collect(range(-2.0, stop=2.0, length=10))
 sdp_solver = "cosmo"
 n_resample = 1000
 significance_level = 0.05
@@ -73,6 +71,12 @@ est = DyadicKernelDensityEstimator(
     n_resample, sdp_solver, evals, data, Dict())
 
 fit(est)
+
+# display properties of estimator
+display(est)
+
+# display evaluation points
+display(evals')
 
 # display point estimates
 display(est.fhat')
