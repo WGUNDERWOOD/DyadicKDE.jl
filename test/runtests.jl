@@ -7,7 +7,7 @@ using Random
     # specify parameters
     n_data = 50
     kernel_names = ["epanechnikov_order_2", "epanechnikov_order_4"]
-    evals = collect(range(-2.0, stop=2.0, length=20))
+    evals = collect(range(-2.0, stop=2.0, length=10))
     sdp_solver = "cosmo"
     n_resample = 1000
     significance_level = 0.05
