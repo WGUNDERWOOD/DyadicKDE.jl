@@ -1,10 +1,9 @@
 using DyadicKDE
-using Random
 
 # specify parameters
 n_data = 500
 n_evals = 50
-n_repeats = 100
+n_repeats = 2000
 degeneracies = ["total", "partial", "none"]
 kernel_names = ["epanechnikov_order_2", "epanechnikov_order_4"]
 evals = collect(range(-2.0, stop=2.0, length=n_evals))
@@ -19,7 +18,6 @@ ps = Dict(
 )
 
 println("Running experiments")
-Random.seed!(314159)
 for degen in degeneracies
     for kernel_name in kernel_names
 

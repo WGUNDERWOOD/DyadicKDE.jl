@@ -87,3 +87,14 @@ display(est.pci)
 # display uniform confidence band
 display(est.ucb)
 ```
+
+## Paper replication
+
+The table of results presented in
+[Cattaneo, Feng and Underwood, 2022](https://arxiv.org/abs/2201.05967)
+can be replicated by running the Julia script
+[test/paper_replication.jl](https://github.com/WGUNDERWOOD/DyadicKDE.jl/tree/main/test/paper_replication.jl).
+This script may take a long time to run,
+but can be accelerated for example by first starting Julia with
+`julia -t 8`
+to use 8 CPU threads.

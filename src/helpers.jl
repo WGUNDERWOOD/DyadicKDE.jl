@@ -49,7 +49,7 @@ end
 function get_RIMSE(est::DyadicKernelDensityEstimator)
 
     f = get_f(est)
-    RMSE = mean((est.fhat .- f).^2)
+    RMSE = sqrt(mean((est.fhat .- f).^2))
     return RMSE
 end
 
