@@ -23,10 +23,17 @@ The currently supported kernels are
 
 ## Installation
 
-Install from source by starting a Julia interactive session and running
+Install from the Julia General registry by starting a
+Julia interactive session and running
 
 ```julia
-]add "https://github.com/WGUNDERWOOD/DyadicKDE.jl.git"
+] add DyadicKDE
+```
+
+Alternatively install from source by running
+
+```julia
+] add "https://github.com/WGUNDERWOOD/DyadicKDE.jl.git"
 ```
 
 The package can then be loaded with
@@ -35,10 +42,10 @@ The package can then be loaded with
 using DyadicKDE
 ```
 
-and tested with
+and tested (this may take a few minutes) with
 
 ```julia
-]test DyadicKDE
+] test DyadicKDE
 ```
 
 ## Dependencies
@@ -94,7 +101,7 @@ The table of results presented in
 [Cattaneo, Feng and Underwood, 2022](https://arxiv.org/abs/2201.05967)
 can be replicated by running the Julia script
 [test/paper_replication.jl](https://github.com/WGUNDERWOOD/DyadicKDE.jl/tree/main/test/paper_replication.jl).
-This script may take a long time to run,
+This script may take a long time to run (several hours),
 but can be accelerated for example by first starting Julia with
 `julia -t 8`
 to use 8 CPU threads.
