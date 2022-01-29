@@ -1,20 +1,21 @@
 using DyadicKDE
 using Test
 using Random
+using Suppressor
 
 
 
 @testset "ROT bandwidth" begin
 
     Random.seed!(314159)
-    n_data = 100
+    n_data = 50
     p = [0.25, 0.0, 0.75]
 
     for rep in 1:5
 
         data = make_data(n_data, p)
         h_ROT = estimate_ROT_bandwidth(data, "epanechnikov_order_2")
-        @test 0.5 <= h_ROT <= 0.7
+        @test 0.6 <= h_ROT <= 0.9
     end
 end
 
@@ -23,13 +24,13 @@ end
 @testset "Estimator" begin
 
     Random.seed!(314159)
-    n_data = 100
+    n_data = 50
     kernel_names = ["epanechnikov_order_2", "epanechnikov_order_4"]
     evals = collect(range(-2.0, stop=2.0, length=10))
     sdp_solver = "cosmo"
     n_resample = 1000
     significance_level = 0.5
-    bandwidth = 0.5
+    bandwidth = 0.8
     ps = [[0.5, 0.0, 0.5],
           [0.25, 0.0, 0.75],
           [0.2, 0.2, 0.6]]
@@ -51,7 +52,6 @@ end
 
                 fit(est)
 
-                @test all(0 .<= est.bci[1,:])
                 @test all(est.bci[1,:] .<= est.ucb[1,:])
                 @test all(est.ucb[1,:] .<= est.pci[1,:])
                 @test all(est.pci[1,:] .<= est.fhat)
@@ -75,6 +75,8 @@ end
 
                 RIMSE = get_RIMSE(est)
                 @test 0 <= RIMSE <= 0.05
+
+                @suppress display(est)
             end
         end
     end
