@@ -44,7 +44,8 @@ end
 
                 est = DyadicKernelDensityEstimator(
                     kernel_name, bandwidth, significance_level,
-                    n_resample, sdp_solver, evals, data, Dict())
+                    n_resample, sdp_solver, evals, data,
+                    Dict("p" => p))
 
                 fit(est)
 
@@ -55,6 +56,20 @@ end
                 @test all(est.fhat .<= est.pci[2,:])
                 @test all(est.pci[2,:] .<= est.ucb[2,:])
                 @test all(est.ucb[2,:] .<= est.bci[2,:])
+
+                ucb_average_width = get_ucb_average_width(est)
+                pci_average_width = get_pci_average_width(est)
+                bci_average_width = get_bci_average_width(est)
+
+                @test pci_average_width <= ucb_average_width
+                @test ucb_average_width <= bci_average_width
+
+                ucb_coverage = get_ucb_coverage(est)
+                pci_coverage = get_pci_coverage(est)
+                bci_coverage = get_bci_coverage(est)
+
+                @test pci_coverage <= ucb_coverage
+                @test ucb_coverage <= bci_coverage
             end
         end
     end

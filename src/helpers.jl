@@ -71,6 +71,14 @@ end
 
 
 
+"Check if the Bonferroni confidence intervals all cover the true density function"
+function get_bci_coverage(est::DyadicKernelDensityEstimator)
+
+    return all(est.bci[1,:] .<= get_f(est) .<= est.bci[2,:])
+end
+
+
+
 "Return the average width of the uniform confidence band"
 function get_ucb_average_width(est::DyadicKernelDensityEstimator)
 
@@ -83,4 +91,12 @@ end
 function get_pci_average_width(est::DyadicKernelDensityEstimator)
 
     return sum(est.pci[2,:] .- est.pci[1,:]) / est.n_evals
+end
+
+
+
+"Return the average width of the Bonferroni confidence intervals"
+function get_bci_average_width(est::DyadicKernelDensityEstimator)
+
+    return sum(est.bci[2,:] .- est.bci[1,:]) / est.n_evals
 end

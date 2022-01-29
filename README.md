@@ -1,4 +1,5 @@
 [![Build Status](https://github.com/WGUNDERWOOD/DyadicKDE.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/WGUNDERWOOD/DyadicKDE.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![codecov](https://codecov.io/gh/WGUNDERWOOD/DyadicKDE.jl/branch/main/graph/badge.svg?token=JLN7VK2LT8)](https://codecov.io/gh/WGUNDERWOOD/DyadicKDE.jl)
 
 # DyadicKDE.jl
 
