@@ -1,2 +1,4 @@
 /Manifest.toml
 *.cov
+docs/build/
+docs/src/index.md
