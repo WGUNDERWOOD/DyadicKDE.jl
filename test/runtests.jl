@@ -42,6 +42,8 @@ end
 
             for kernel_name in kernel_names
 
+                @test_throws BoundsError [1, 2, 3][4]
+
                 est = DyadicKernelDensityEstimator(
                     kernel_name, bandwidth, significance_level,
                     n_resample, sdp_solver, evals, data,
@@ -70,6 +72,9 @@ end
 
                 @test pci_coverage <= ucb_coverage
                 @test ucb_coverage <= bci_coverage
+
+                RIMSE = get_RIMSE(est)
+                @test 0 <= RIMSE <= 0.05
             end
         end
     end

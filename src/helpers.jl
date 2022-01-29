@@ -82,7 +82,7 @@ end
 "Return the average width of the uniform confidence band"
 function get_ucb_average_width(est::DyadicKernelDensityEstimator)
 
-    return sum(est.ucb[2,:] .- est.ucb[1,:]) / est.n_evals
+    return mean(est.ucb[2,:] .- est.ucb[1,:])
 end
 
 
@@ -90,7 +90,7 @@ end
 "Return the average width of the pointwise confidence intervals"
 function get_pci_average_width(est::DyadicKernelDensityEstimator)
 
-    return sum(est.pci[2,:] .- est.pci[1,:]) / est.n_evals
+    return mean(est.pci[2,:] .- est.pci[1,:])
 end
 
 
@@ -98,5 +98,5 @@ end
 "Return the average width of the Bonferroni confidence intervals"
 function get_bci_average_width(est::DyadicKernelDensityEstimator)
 
-    return sum(est.bci[2,:] .- est.bci[1,:]) / est.n_evals
+    return mean(est.bci[2,:] .- est.bci[1,:])
 end
