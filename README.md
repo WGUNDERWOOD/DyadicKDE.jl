@@ -11,12 +11,13 @@ Dyadic kernel density estimation in Julia.
 This repository provides a Julia package which implements the methods for
 dyadic kernel density estimation detailed in
 [Cattaneo, Feng and Underwood, 2022](https://arxiv.org/abs/2201.05967).
-In particular, the package provides the capability for computing:
+In particular, the package provides the capability for computing
 
 - Point estimates of a dyadic density function
 - Pointwise confidence intervals for the density
-- Uniform confidence bands for the density
-- A rule-of-thumb bandwidth for the estimator
+- Bonferroni-corrected confidence intervals
+- Uniform confidence bands
+- A rule-of-thumb bandwidth selector
 
 The currently supported kernels are
 
@@ -52,7 +53,9 @@ and tested (this may take a few minutes) with
 
 ## Dependencies
 
-DyadicKDE.jl depends on several other Julia packages which are listed in
+DyadicKDE.jl requires
+[Julia 1.x](https://docs.julialang.org/en/v1/)
+and depends on several other Julia packages listed in
 [Project.toml](https://github.com/WGUNDERWOOD/DyadicKDE.jl/tree/main/Project.toml).
 
 ## Quick start guide
@@ -107,3 +110,5 @@ This script may take a long time to run (several hours),
 but can be accelerated for example by first starting Julia with
 `julia -t 8`
 to use 8 CPU threads.
+Exact results may vary due to Julia's
+[pseudorandom number generation](https://docs.julialang.org/en/v1/stdlib/Random/).
