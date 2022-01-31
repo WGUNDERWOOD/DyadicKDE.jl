@@ -1,6 +1,7 @@
 [![Build Status](https://github.com/WGUNDERWOOD/DyadicKDE.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/WGUNDERWOOD/DyadicKDE.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/WGUNDERWOOD/DyadicKDE.jl/blob/main/LICENSE)
 [![codecov](https://codecov.io/gh/WGUNDERWOOD/DyadicKDE.jl/branch/main/graph/badge.svg?token=JLN7VK2LT8)](https://codecov.io/gh/WGUNDERWOOD/DyadicKDE.jl)
+[![docs](https://img.shields.io/badge/docs-blue.svg)](https://WGUNDERWOOD.github.io/DyadicKDE.jl/stable)
 
 # DyadicKDE.jl
 
@@ -13,7 +14,7 @@ dyadic kernel density estimation detailed in
 [Cattaneo, Feng and Underwood, 2022](https://arxiv.org/abs/2201.05967).
 In particular, the package provides the capability for computing
 
-- Point estimates of a dyadic density function
+- Point estimates of a univariate dyadic density function
 - Pointwise confidence intervals for the density
 - Bonferroni-corrected confidence intervals
 - Uniform confidence bands

@@ -1,4 +1,6 @@
-"Composite type for the dyadic kernel density estimator"
+"""
+Composite type to represent a dyadic kernel density estimator.
+"""
 Base.@kwdef mutable struct DyadicKernelDensityEstimator
 
 # input parameters
@@ -31,8 +33,22 @@ Base.@kwdef mutable struct DyadicKernelDensityEstimator
 end
 
 
+"""
+    DyadicKernelDensityEstimator(kernel_name, bandwidth, significance_level,
+                                 n_resample, sdp_solver, evals, data, meta)
 
-"Construct a dyadic kernel density estimator"
+Construct a dyadic kernel density estimator.
+
+# Arguments
+- `kernel_name::String`: which kernel to use.
+- `bandwidth::Float64`: the bandwidth for the estimator.
+- `significance_level::Float64`: for the confidence band/intervals.
+- `n_resample::Int`: the number of resamples used to construct the confidence band/intervals.
+- `sdp_solver::String`: semi-definite program solver.
+- `evals::Vector{Float64}`: points at which to evaluate the density estimator.
+- `data::UpperTriangular{Float64}`: array of dyadic data.
+- `meta::Dict`: any extra information to pass to the estimator.
+"""
 function DyadicKernelDensityEstimator(
     kernel_name::String,
     bandwidth::Float64,
@@ -329,7 +345,12 @@ end
 
 
 
-"Estimate a rule-of-thumb bandwidth from dyadic data"
+"""
+    estimate_ROT_bandwidth(data::UpperTriangular{Float64},
+                           kernel_name::String)
+
+Estimate a rule-of-thumb bandwidth from dyadic data.
+"""
 function estimate_ROT_bandwidth(data::UpperTriangular{Float64},
                                 kernel_name::String)
 
@@ -375,7 +396,11 @@ end
 
 
 
-"Fit a dyadic kernel density estimator"
+"""
+    fit(est::DyadicKernelDensityEstimator)
+
+Fit a dyadic kernel density estimator to data.
+"""
 function fit(est::DyadicKernelDensityEstimator)
 
     estimate_fhat(est)
@@ -389,7 +414,11 @@ end
 
 
 
-"Display a dyadic kernel density estimator"
+"""
+    display(est::DyadicKernelDensityEstimator)
+
+Display a dyadic kernel density estimator.
+"""
 function Base.display(est::DyadicKernelDensityEstimator)
 
     println("DyadicKernelDensityEstimator")

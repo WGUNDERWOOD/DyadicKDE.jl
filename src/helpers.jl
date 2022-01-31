@@ -1,4 +1,8 @@
-"Generate some example dyadic data using a Gaussian mixture model"
+"""
+    make_data(n_data::Int, p::Vector{Float64})
+
+Generate some example dyadic data using a Gaussian mixture model.
+"""
 function make_data(n_data::Int, p::Vector{Float64})
 
     @assert n_data >= 2
@@ -17,7 +21,11 @@ end
 
 
 
-"Compute the mean of a vector of numbers"
+"""
+    mean(x::Vector{<:Number})
+
+Compute the mean of a vector of numbers.
+"""
 function mean(x::Vector{<:Number})
 
     return sum(x) / length(x)
@@ -25,7 +33,11 @@ end
 
 
 
-"Compute the standard normal density function"
+"""
+    phi(t::Real)
+
+Compute the standard normal density function.
+"""
 function phi(t::Real)
 
     return (2 * pi)^(-0.5) * exp(-(t^2) / 2)
@@ -33,7 +45,11 @@ end
 
 
 
-"Get the true density function from example dyadic data"
+"""
+    get_f(est::DyadicKernelDensityEstimator)
+
+Get the true density function from example dyadic Gaussian mixture data.
+"""
 function get_f(est::DyadicKernelDensityEstimator)
 
     p = est.meta["p"]
@@ -45,7 +61,11 @@ end
 
 
 
-"Compute the root integrated mean squared error"
+"""
+    get_RIMSE(est::DyadicKernelDensityEstimator)
+
+Compute the root integrated mean squared error.
+"""
 function get_RIMSE(est::DyadicKernelDensityEstimator)
 
     f = get_f(est)
@@ -55,7 +75,11 @@ end
 
 
 
-"Check if the uniform confidence band covers the true density function"
+"""
+    get_ucb_coverage(est::DyadicKernelDensityEstimator)
+
+Check if the uniform confidence band covers the true density function.
+"""
 function get_ucb_coverage(est::DyadicKernelDensityEstimator)
 
     return all(est.ucb[1,:] .<= get_f(est) .<= est.ucb[2,:])
@@ -63,7 +87,11 @@ end
 
 
 
-"Check if the pointwise confidence intervals all cover the true density function"
+"""
+    get_pci_coverage(est::DyadicKernelDensityEstimator)
+
+Check if the pointwise confidence intervals all cover the true density function.
+"""
 function get_pci_coverage(est::DyadicKernelDensityEstimator)
 
     return all(est.pci[1,:] .<= get_f(est) .<= est.pci[2,:])
@@ -71,7 +99,11 @@ end
 
 
 
-"Check if the Bonferroni confidence intervals all cover the true density function"
+"""
+    get_bci_coverage(est::DyadicKernelDensityEstimator)
+
+Check if the Bonferroni confidence intervals all cover the true density function.
+"""
 function get_bci_coverage(est::DyadicKernelDensityEstimator)
 
     return all(est.bci[1,:] .<= get_f(est) .<= est.bci[2,:])
@@ -79,7 +111,11 @@ end
 
 
 
-"Return the average width of the uniform confidence band"
+"""
+    get_ucb_average_width(est::DyadicKernelDensityEstimator)
+
+Return the average width of the uniform confidence band.
+"""
 function get_ucb_average_width(est::DyadicKernelDensityEstimator)
 
     return mean(est.ucb[2,:] .- est.ucb[1,:])
@@ -87,7 +123,11 @@ end
 
 
 
-"Return the average width of the pointwise confidence intervals"
+"""
+    get_pci_average_width(est::DyadicKernelDensityEstimator)
+
+Return the average width of the pointwise confidence intervals.
+"""
 function get_pci_average_width(est::DyadicKernelDensityEstimator)
 
     return mean(est.pci[2,:] .- est.pci[1,:])
@@ -95,7 +135,11 @@ end
 
 
 
-"Return the average width of the Bonferroni confidence intervals"
+"""
+    get_bci_average_width(est::DyadicKernelDensityEstimator)
+
+Return the average width of the Bonferroni confidence intervals.
+"""
 function get_bci_average_width(est::DyadicKernelDensityEstimator)
 
     return mean(est.bci[2,:] .- est.bci[1,:])
