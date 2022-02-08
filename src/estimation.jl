@@ -357,14 +357,14 @@ function estimate_ROT_bandwidth(data::UpperTriangular{Float64},
     # get data_vec
     n_data = size(data, 1)
     N_data = Int(n_data * (n_data - 1) // 2)
-    data_vec = fill(NaN, (N_data))
-    index = 1
+    data_vec = Float64[]
 
     for i in 1:n_data
         for j in 1:n_data
             if i < j
-                data_vec[index] = data[i,j]
-                index += 1
+                if -Inf < data[i,j] < Inf
+                    push!(data_vec, data[i,j])
+                end
             end
         end
     end
@@ -373,9 +373,9 @@ function estimate_ROT_bandwidth(data::UpperTriangular{Float64},
     if kernel_name == "epanechnikov_order_2"
 
         # sigmahat_W
-        mean_W = sum(data) / N_data
+        mean_W = sum(data_vec) / length(data_vec)
         sum_of_squares_W = sum((data_vec .- mean_W).^2)
-        sigmahat_W_squared = sum_of_squares_W / (N_data - 1)
+        sigmahat_W_squared = sum_of_squares_W / (length(data_vec) - 1)
         sigmahat_W = sqrt(sigmahat_W_squared)
 
         # IQRhat
