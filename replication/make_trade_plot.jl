@@ -1,28 +1,25 @@
+# generate the trade plots found in
+# https://arxiv.org/abs/2201.05967
+
 using CSV
 using DataFrames
 using LinearAlgebra
-using PyPlot
 using DyadicKDE
-
-
-
+include("./plot_helpers.jl")
 
 
 # set estimation parameters
-n_evals = 100 # 200 is CKS
+n_evals = 100
 kernel_name = "epanechnikov_order_4"
 evals = collect(range(-10.0, stop=10.0, length=n_evals))
-sdp_solver = "mosek"
+sdp_solver = "cosmo"
 n_resample = 10000
 significance_level = 0.05
-
 
 
 # set plot parameters
 linewidth = 1.0
 y_lim = [-0.003, 0.08]
-
-
 e = 0.22
 pci_marker = PyPlot.matplotlib.path.Path([[-1,0], [-1,e], [-1,-e], [-1,0], [1,0], [1,e], [1,-e], [1,0]])
 handle_fhat = PyPlot.matplotlib.lines.Line2D([0], [0], color="k", lw=linewidth, linestyle=(0, (1,1)), label="\$\\widehat f_W(w)\$")
@@ -31,14 +28,12 @@ handle_pci = PyPlot.matplotlib.lines.Line2D([0], [0], color="black", lw=0, marke
 handles = [handle_fhat, handle_ucb, handle_pci]
 
 
-
-# run experiments
-
+println("Running experiments")
 for year in ["1995", "2000", "2005"]
 
     # load data
-    println(year)
-    data_frame = CSV.read("../../data/data$year.csv", DataFrame)
+    println("Year: $year")
+    data_frame = CSV.read("data$year.csv", DataFrame)
     data_array = Array(data_frame[:,2:end])
     data = UpperTriangular(data_array + data_array') ./ 2
     n = size(data, 1)
@@ -86,7 +81,7 @@ for year in ["1995", "2000", "2005"]
     legend(handles=handles, loc="upper left")
     plt.ylabel("Density", labelpad=4.0)
     plt.tight_layout()
-    PyPlot.savefig("../../plots/trade_$year.pdf")
+    PyPlot.savefig("trade_plot_$year.pdf")
     close("all")
 
 end
