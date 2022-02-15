@@ -1,3 +1,6 @@
+# generate the table found in
+# https://arxiv.org/abs/2201.05967
+
 using DyadicKDE
 
 # specify parameters
@@ -16,6 +19,7 @@ ps = Dict(
     "partial" => [0.25, 0.0, 0.75],
     "none" => [0.2, 0.2, 0.6],
 )
+
 
 println("Running experiments")
 for degen in degeneracies
