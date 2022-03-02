@@ -21,35 +21,36 @@ end
 
 
 
-@testset "Kernels" begin
+@testset verbose = true "Kernels" begin
 
     h = 0.1
     w_min = 0.0
     w_max = 1.0
     tol = 1e-4
-    len = 10000
+    len = 4000
 
     ws = collect(range(0, stop=1, length=len))
 
-    # order 2
-    for i in 1:len
-        w = ws[i]
-        ks = [DyadicKDE.kernel(s, w, h, w_min, w_max, "epanechnikov_order_2") for s in ws]
-        cs = (ws .- w) ./ h
-        @test abs(trapezium_integrate(ks, ws) - 1) <= tol
-        @test abs(trapezium_integrate(cs .* ks, ws) - 0) <= tol
+    @testset "Epanechnikov order 2" begin
+        for i in 1:len
+            w = ws[i]
+            ks = [DyadicKDE.kernel(s, w, h, w_min, w_max, "epanechnikov_order_2") for s in ws]
+            cs = (ws .- w) ./ h
+            @test abs(trapezium_integrate(ks, ws) - 1) <= tol
+            @test abs(trapezium_integrate(cs .* ks, ws) - 0) <= tol
+        end
     end
 
-
-    # order 4
-    for i in 1:len
-        w = ws[i]
-        ks = [DyadicKDE.kernel(s, w, h, w_min, w_max, "epanechnikov_order_4") for s in ws]
-        cs = (ws .- w) ./ h
-        @test abs(trapezium_integrate(ks, ws) - 1) <= tol
-        @test abs(trapezium_integrate(cs .* ks, ws) - 0) <= tol
-        @test abs(trapezium_integrate(cs.^2 .* ks, ws) - 0) <= tol
-        @test abs(trapezium_integrate(cs.^3 .* ks, ws) - 0) <= tol
+    @testset "Epanechnikov order 4" begin
+        for i in 1:len
+            w = ws[i]
+            ks = [DyadicKDE.kernel(s, w, h, w_min, w_max, "epanechnikov_order_4") for s in ws]
+            cs = (ws .- w) ./ h
+            @test abs(trapezium_integrate(ks, ws) - 1) <= tol
+            @test abs(trapezium_integrate(cs .* ks, ws) - 0) <= tol
+            @test abs(trapezium_integrate(cs.^2 .* ks, ws) - 0) <= tol
+            @test abs(trapezium_integrate(cs.^3 .* ks, ws) - 0) <= tol
+        end
     end
 end
 
@@ -58,14 +59,13 @@ end
 @testset "ROT bandwidth" begin
 
     Random.seed!(314159)
-    n_data = 50
+    n_data = 1000
     p = [0.25, 0.0, 0.75]
 
     for rep in 1:5
-
         data = make_data(n_data, p)
         h_ROT = estimate_ROT_bandwidth(data, "epanechnikov_order_2")
-        @test 0.6 <= h_ROT <= 0.9
+        @test 0.24 <= h_ROT <= 0.25
     end
 end
 
@@ -92,8 +92,6 @@ end
             data = make_data(n_data, p)
 
             for kernel_name in kernel_names
-
-                @test_throws BoundsError [1, 2, 3][4]
 
                 est = DyadicKernelDensityEstimator(
                     kernel_name, bandwidth, significance_level,
