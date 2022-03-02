@@ -5,6 +5,56 @@ using Suppressor
 
 
 
+function trapezium_integrate(f::Vector{Float64}, x::Vector{Float64})
+
+    @assert length(f) == length(x)
+    n_areas = length(x) - 1
+    areas = fill(NaN, n_areas)
+
+    for i in 1:n_areas
+        areas[i] = 0.5 * (f[i+1] + f[i]) * (x[i+1] - x[i])
+    end
+
+    area = sum(areas)
+    return area
+end
+
+
+
+@testset "Kernels" begin
+
+    h = 0.1
+    w_min = 0.0
+    w_max = 1.0
+    tol = 1e-4
+    len = 10000
+
+    ws = collect(range(0, stop=1, length=len))
+
+    # order 2
+    for i in 1:len
+        w = ws[i]
+        ks = [DyadicKDE.kernel(s, w, h, w_min, w_max, "epanechnikov_order_2") for s in ws]
+        cs = (ws .- w) ./ h
+        @test abs(trapezium_integrate(ks, ws) - 1) <= tol
+        @test abs(trapezium_integrate(cs .* ks, ws) - 0) <= tol
+    end
+
+
+    # order 4
+    for i in 1:len
+        w = ws[i]
+        ks = [DyadicKDE.kernel(s, w, h, w_min, w_max, "epanechnikov_order_4") for s in ws]
+        cs = (ws .- w) ./ h
+        @test abs(trapezium_integrate(ks, ws) - 1) <= tol
+        @test abs(trapezium_integrate(cs .* ks, ws) - 0) <= tol
+        @test abs(trapezium_integrate(cs.^2 .* ks, ws) - 0) <= tol
+        @test abs(trapezium_integrate(cs.^3 .* ks, ws) - 0) <= tol
+    end
+end
+
+
+
 @testset "ROT bandwidth" begin
 
     Random.seed!(314159)
