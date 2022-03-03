@@ -17,8 +17,9 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
 COSMO = "0.8"
-Convex = "0.14"
+Convex = "0.14, 0.15"
 Distributions = "0.25"
 Mosek = "1"
-MosekTools = "0.9, 0.11"
+MosekTools = "0.9, 0.11, 0.12"
+Suppressor = "0.2"
 julia = "1"
