@@ -8,6 +8,10 @@
 
 Dyadic kernel density estimation in Julia.
 
+[Documentation](https://wgunderwood.github.io/DyadicKDE.jl/stable/)
+built with
+[Documenter.jl](https://juliadocs.github.io/Documenter.jl/stable/).
+
 ## Introduction
 
 This repository provides a Julia package which implements the methods for
