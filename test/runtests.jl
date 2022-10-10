@@ -2,6 +2,7 @@ using DyadicKDE
 using Test
 using Random
 using Suppressor
+using Aqua
 
 
 
@@ -18,6 +19,17 @@ function trapezium_integrate(f::Vector{Float64}, x::Vector{Float64})
     area = sum(areas)
     return area
 end
+
+
+
+# Aqua tests
+Aqua.test_ambiguities(DyadicKDE)
+Aqua.test_unbound_args(DyadicKDE)
+Aqua.test_undefined_exports(DyadicKDE)
+Aqua.test_project_extras(DyadicKDE)
+Aqua.test_stale_deps(DyadicKDE, ignore=[:Aqua, :Suppressor])
+Aqua.test_deps_compat(DyadicKDE)
+Aqua.test_project_toml_formatting(DyadicKDE)
 
 
 
