@@ -141,3 +141,24 @@ end
         end
     end
 end
+
+
+
+@testset "Errors" begin
+
+    @test_throws "Unknown kernel_name" DyadicKDE.kernel(
+        0.0, 0.0, 1.0, -1.0, 1.0, "not_a_valid_kernel_name")
+
+    evals = collect(range(-2.0, stop=2.0, length=10))
+    p = [0.5, 0.0, 0.5]
+    data = make_data(50, p)
+    est = DyadicKernelDensityEstimator(
+        "epanechnikov_order_2", 0.8, 0.5,
+        10, "not_a_valid_sdp_solver_name", evals, data,
+        Dict("p" => p))
+
+    @test_throws "Unknown sdp_solver" fit(est)
+
+    @test_throws "Unknown kernel_name" estimate_ROT_bandwidth(
+        data, "epanechnikov_order_4")
+end

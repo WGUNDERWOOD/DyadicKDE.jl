@@ -242,7 +242,7 @@ function estimate_Sigmahatplus(est::DyadicKernelDensityEstimator)
         elseif est.sdp_solver == "cosmo"
             solve!(problem, COSMO.Optimizer, silent_solver=true)
         else
-            error("unknown sdp_solver")
+            error("Unknown sdp_solver")
         end
 
         # get answer
@@ -389,7 +389,7 @@ function estimate_ROT_bandwidth(data::UpperTriangular{Float64},
         return 2.435 * min(sigmahat_W, IQRhat / 1.349) * n_rate
 
     else
-        error("unknown kernel_name")
+        error("Unknown kernel_name")
     end
 
 end
