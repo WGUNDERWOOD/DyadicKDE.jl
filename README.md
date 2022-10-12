@@ -3,6 +3,7 @@
 [![codecov](https://codecov.io/gh/WGUNDERWOOD/DyadicKDE.jl/branch/main/graph/badge.svg?token=JLN7VK2LT8)](https://codecov.io/gh/WGUNDERWOOD/DyadicKDE.jl)
 [![docs stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://WGUNDERWOOD.github.io/DyadicKDE.jl/stable)
 [![docs dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://WGUNDERWOOD.github.io/DyadicKDE.jl/dev)
+[![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 
 # DyadicKDE.jl
 

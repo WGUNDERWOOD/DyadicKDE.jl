@@ -10,7 +10,7 @@ function kernel(s::Float64, w::Float64, bandwidth::Float64, w_min::Float64,
             return kernel_epanechnikov_order_4(s, w, bandwidth, w_min, w_max)
 
         else
-            error("unknown kernel")
+            error("Unknown kernel_name")
         end
 
     end
