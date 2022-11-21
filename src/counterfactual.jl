@@ -1,7 +1,7 @@
 """
-Composite type to represent a dyadic kernel density estimator.
+Composite type to represent a counterfactualdyadic kernel density estimator.
 """
-Base.@kwdef mutable struct DyadicKernelDensityEstimator
+Base.@kwdef mutable struct CounterFactualDyadicKernelDensityEstimator
 
     # input parameters
     kernel_name::String
@@ -10,9 +10,9 @@ Base.@kwdef mutable struct DyadicKernelDensityEstimator
     n_resample::Int
     sdp_solver::String
     evals::Vector{Float64}
-    data::UpperTriangular{Float64}
+    W::UpperTriangular{Float64}
+    X::Vector{Int64}
     meta::Dict
-    # TODO remove this meta part?
 
     # final products
     n_evals::Int
@@ -20,18 +20,21 @@ Base.@kwdef mutable struct DyadicKernelDensityEstimator
     evals_max::Float64
     n_data::Int
     N_data::Int
-    data_vec::Vector{Float64}
-    fhat::Vector{Float64}
-    Sigmahat::Symmetric{Float64}
-    Sigmahatplus::Symmetric{Float64}
-    eigmin_Sigmahat::Float64
-    eigmin_Sigmahatplus::Float64
-    sdp_error::Float64
-    ucb::Array{Float64, 2}
-    pci::Array{Float64, 2}
-    bci::Array{Float64, 2}
+    W_vec::Vector{Float64}
+    fhat_0::Vector{Float64}
+    fhat_01::Vector{Float64}
+    #Sigmahat::Symmetric{Float64}
+    #Sigmahatplus::Symmetric{Float64}
+    #eigmin_Sigmahat::Float64
+    #eigmin_Sigmahatplus::Float64
+    #sdp_error::Float64
+    #ucb::Array{Float64, 2}
+    #pci::Array{Float64, 2}
+    #bci::Array{Float64, 2}
 
 end
+
+#=
 
 
 """
@@ -440,3 +443,4 @@ function Base.display(est::DyadicKernelDensityEstimator)
     println("SDP error: ", est.sdp_error)
 
 end
+=#
