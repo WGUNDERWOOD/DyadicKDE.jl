@@ -10,9 +10,9 @@ Base.@kwdef mutable struct CounterfactualDyadicKernelDensityEstimator
     n_resample::Int
     sdp_solver::String
     evals::Vector{Float64}
-    W1::UpperTriangular{Float64}
-    X0::Vector{Int64}
-    X1::Vector{Int64}
+    W::UpperTriangular{Float64}
+    X0::Vector{Int}
+    X1::Vector{Int}
     meta::Dict
 
     # final products
@@ -21,7 +21,8 @@ Base.@kwdef mutable struct CounterfactualDyadicKernelDensityEstimator
     evals_max::Float64
     n_data::Int
     N_data::Int
-    W1_vec::Vector{Float64}
+    X_levels::Int
+    W_vec::Vector{Float64}
     fhat_cf::Vector{Float64}
     Sigmahat_cf::Symmetric{Float64}
     Sigmahatplus_cf::Symmetric{Float64}
@@ -39,7 +40,7 @@ end
 """
     CounterfactualDyadicKernelDensityEstimator(kernel_name, bandwidth, significance_level,
                                                n_resample, sdp_solver, evals,
-                                               W1, X0, X1, meta)
+                                               W, X0, X1, meta)
 
 Construct a counterfactual dyadic kernel density estimator.
 
@@ -50,9 +51,9 @@ Construct a counterfactual dyadic kernel density estimator.
 - `n_resample::Int`: the number of resamples used to construct the confidence band/intervals.
 - `sdp_solver::String`: semi-definite program solver.
 - `evals::Vector{Float64}`: points at which to evaluate the density estimator.
-- `W1::UpperTriangular{Float64}`: array of treated dyadic data.
-- `X0::Vector{Int64}`: categorical vector of untreated covariates.
-- `X1::Vector{Int64}`: categorical vector of treated covariates.
+- `W::UpperTriangular{Float64}`: array of treated dyadic data.
+- `X0::Vector{Int}`: categorical vector of untreated covariates.
+- `X1::Vector{Int}`: categorical vector of treated covariates.
 - `meta::Dict`: any extra information to pass to the estimator.
 """
 function CounterfactualDyadicKernelDensityEstimator(
@@ -62,9 +63,9 @@ function CounterfactualDyadicKernelDensityEstimator(
     n_resample::Int,
     sdp_solver::String,
     evals::Vector{Float64},
-    W1::UpperTriangular{Float64},
-    X0::Vector{Int64},
-    X1::Vector{Int64},
+    W::UpperTriangular{Float64},
+    X0::Vector{Int},
+    X1::Vector{Int},
     meta::Dict)
 
     @assert bandwidth > 0
@@ -72,14 +73,14 @@ function CounterfactualDyadicKernelDensityEstimator(
     @assert n_resample >= 1
 
     n_evals = length(evals)
-    n_data = size(W1, 1)
+    n_data = size(W, 1)
     N_data = Int(n_data * (n_data - 1) // 2)
-    X_max = max(maximum(X0), maximum(X1))
+    X_levels = max(maximum(X0), maximum(X1))
 
     @assert length(X0) == n_data
     @assert length(X1) == n_data
-    @assert sort(unique(X0)) == collect(1:X_max)
-    @assert sort(unique(X1)) == collect(1:X_max)
+    @assert sort(unique(X0)) == collect(1:X_levels)
+    @assert sort(unique(X1)) == collect(1:X_levels)
 
     est = CounterfactualDyadicKernelDensityEstimator(
 
@@ -90,7 +91,7 @@ function CounterfactualDyadicKernelDensityEstimator(
         n_resample,
         sdp_solver,
         evals,
-        W1,
+        W,
         X0,
         X1,
         meta,
@@ -101,6 +102,7 @@ function CounterfactualDyadicKernelDensityEstimator(
         maximum(evals),
         n_data,
         N_data,
+        X_levels,
         fill(NaN, (N_data)),
         fill(NaN, (n_evals)),
         Symmetric(fill(NaN, (n_evals, n_evals))),
@@ -117,7 +119,7 @@ function CounterfactualDyadicKernelDensityEstimator(
     for i in 1:n_data
         for j in 1:n_data
             if i < j
-                est.W1_vec[index] = est.W1[i,j]
+                est.W_vec[index] = est.W[i,j]
                 index += 1
             end
         end
@@ -127,21 +129,65 @@ function CounterfactualDyadicKernelDensityEstimator(
 
 end
 
-#=
 
-function estimate_fhat(est::DyadicKernelDensityEstimator)
 
-    for k in 1:est.n_evals
+function estimate_phat(est::CounterfactualDyadicKernelDensityEstimator,
+                       treatment::Int64)
 
-        est.fhat[k] = sum(kernel.(est.data_vec, est.evals[k], est.bandwidth,
-                                  est.evals_min, est.evals_max, est.kernel_name))
-
-        est.fhat[k] /= est.N_data
+    if treatment == 0
+        X = est.X0
+    elseif treatment == 1
+        X = est.X1
+    else
+        error("invalid treatment")
     end
+
+    phat = fill(0.0, est.X_levels)
+
+    for k in 1:est.X_levels
+        phat[k] = sum(X .== k) / est.n_data
+    end
+
+    return phat
+end
+
+
+
+function estimate_psihat(est::CounterfactualDyadicKernelDensityEstimator)
+
+    phat0 = estimate_phat(est, 0)
+    phat1 = estimate_phat(est, 1)
+    psihat_values = phat0 ./ phat1
+    psihat = [psihat_values[x] for x in est.X1]
 
 end
 
 
+
+function estimate_fhat_cf(est::CounterfactualDyadicKernelDensityEstimator)
+
+    est.fhat_cf .= 0
+    psihat = estimate_psihat(est)
+
+    for k in 1:est.n_evals
+        for i in 1:est.n_evals
+            for j in 1:est.n_evals
+                if i < j
+                    est.fhat_cf[k] +=
+                        kernel(est.W[i,j], est.evals[k], est.bandwidth,
+                               est.evals_min, est.evals_max,
+                               est.kernel_name) .*
+                        psihat[i] * psihat[i]
+                end
+            end
+        end
+
+        est.fhat_cf[k] /= est.N_data
+    end
+
+end
+
+#=
 
 function estimate_conditional_expectation(est::DyadicKernelDensityEstimator)
 
@@ -411,22 +457,25 @@ function estimate_ROT_bandwidth(data::UpperTriangular{Float64},
 end
 
 
+=#
 
 """
-    fit(est::DyadicKernelDensityEstimator)
+    fit(est::CounterfactualDyadicKernelDensityEstimator)
 
-Fit a dyadic kernel density estimator to data.
+Fit a counterfactual dyadic kernel density estimator to data.
 """
-function fit(est::DyadicKernelDensityEstimator)
+function fit(est::CounterfactualDyadicKernelDensityEstimator)
 
-    estimate_fhat(est)
-    estimate_Sigmahat(est)
-    estimate_Sigmahatplus(est)
-    estimate_uniform_confidence_band(est)
-    estimate_pointwise_confidence_intervals(est)
-    estimate_bonferroni_confidence_intervals(est)
+    estimate_fhat_cf(est)
+    #estimate_Sigmahat(est)
+    #estimate_Sigmahatplus(est)
+    #estimate_uniform_confidence_band(est)
+    #estimate_pointwise_confidence_intervals(est)
+    #estimate_bonferroni_confidence_intervals(est)
 
 end
+
+#=
 
 
 

@@ -1,10 +1,11 @@
+using Revise
 using DyadicKDE
 using Distributions
 
 n_data = 30
 n_evals = 20
-pW1 = [0.25, 0.0, 0.75]
-W1 = make_data(n_data, pW1)
+pW = [0.25, 0.0, 0.75]
+W = make_data(n_data, pW)
 
 pX0 = [0.2, 0.3, 0.5]
 pX1 = [0.6, 0.2, 0.2]
@@ -21,6 +22,8 @@ meta = Dict()
 
 est = CounterfactualDyadicKernelDensityEstimator(
     kernel_name, bandwidth, significance_level,
-    n_resample, sdp_solver, evals, W1, X0, X1, meta)
+    n_resample, sdp_solver, evals, W, X0, X1, meta)
 
-display(est)
+DyadicKDE.fit(est)
+
+display(est.fhat_cf)

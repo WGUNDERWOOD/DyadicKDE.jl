@@ -12,7 +12,6 @@ include("kernels.jl")
 
 include("estimation.jl")
 export DyadicKernelDensityEstimator
-export fit
 export estimate_ROT_bandwidth
 
 include("helpers.jl")
@@ -28,5 +27,6 @@ export get_bci_average_width
 
 include("counterfactual.jl")
 export CounterfactualDyadicKernelDensityEstimator
+export fit
 
 end
