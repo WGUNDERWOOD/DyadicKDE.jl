@@ -26,4 +26,7 @@ export get_ucb_average_width
 export get_pci_average_width
 export get_bci_average_width
 
+include("counterfactual.jl")
+export CounterfactualDyadicKernelDensityEstimator
+
 end

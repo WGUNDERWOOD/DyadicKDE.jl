@@ -74,8 +74,12 @@ function CounterfactualDyadicKernelDensityEstimator(
     n_evals = length(evals)
     n_data = size(W1, 1)
     N_data = Int(n_data * (n_data - 1) // 2)
+    X_max = max(maximum(X0), maximum(X1))
+
     @assert length(X0) == n_data
     @assert length(X1) == n_data
+    @assert sort(unique(X0)) == collect(1:X_max)
+    @assert sort(unique(X1)) == collect(1:X_max)
 
     est = CounterfactualDyadicKernelDensityEstimator(
 
