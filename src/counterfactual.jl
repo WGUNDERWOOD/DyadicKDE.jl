@@ -1,7 +1,7 @@
 """
-Composite type to represent a counterfactualdyadic kernel density estimator.
+Composite type to represent a counterfactual dyadic kernel density estimator.
 """
-Base.@kwdef mutable struct CounterFactualDyadicKernelDensityEstimator
+Base.@kwdef mutable struct CounterfactualDyadicKernelDensityEstimator
 
     # input parameters
     kernel_name::String
@@ -10,8 +10,9 @@ Base.@kwdef mutable struct CounterFactualDyadicKernelDensityEstimator
     n_resample::Int
     sdp_solver::String
     evals::Vector{Float64}
-    W::UpperTriangular{Float64}
-    X::Vector{Int64}
+    W1::UpperTriangular{Float64}
+    X0::Vector{Int64}
+    X1::Vector{Int64}
     meta::Dict
 
     # final products
@@ -20,28 +21,27 @@ Base.@kwdef mutable struct CounterFactualDyadicKernelDensityEstimator
     evals_max::Float64
     n_data::Int
     N_data::Int
-    W_vec::Vector{Float64}
-    fhat_0::Vector{Float64}
-    fhat_01::Vector{Float64}
-    #Sigmahat::Symmetric{Float64}
-    #Sigmahatplus::Symmetric{Float64}
-    #eigmin_Sigmahat::Float64
-    #eigmin_Sigmahatplus::Float64
-    #sdp_error::Float64
-    #ucb::Array{Float64, 2}
-    #pci::Array{Float64, 2}
-    #bci::Array{Float64, 2}
+    W1_vec::Vector{Float64}
+    fhat_cf::Vector{Float64}
+    Sigmahat_cf::Symmetric{Float64}
+    Sigmahatplus_cf::Symmetric{Float64}
+    eigmin_Sigmahat_cf::Float64
+    eigmin_Sigmahatplus_cf::Float64
+    sdp_error::Float64
+    ucb::Array{Float64, 2}
+    pci::Array{Float64, 2}
+    bci::Array{Float64, 2}
 
 end
 
-#=
 
 
 """
-    DyadicKernelDensityEstimator(kernel_name, bandwidth, significance_level,
-                                 n_resample, sdp_solver, evals, data, meta)
+    CounterfactualDyadicKernelDensityEstimator(kernel_name, bandwidth, significance_level,
+                                               n_resample, sdp_solver, evals,
+                                               W1, X0, X1, meta)
 
-Construct a dyadic kernel density estimator.
+Construct a counterfactual dyadic kernel density estimator.
 
 # Arguments
 - `kernel_name::String`: which kernel to use.
@@ -50,17 +50,21 @@ Construct a dyadic kernel density estimator.
 - `n_resample::Int`: the number of resamples used to construct the confidence band/intervals.
 - `sdp_solver::String`: semi-definite program solver.
 - `evals::Vector{Float64}`: points at which to evaluate the density estimator.
-- `data::UpperTriangular{Float64}`: array of dyadic data.
+- `W1::UpperTriangular{Float64}`: array of treated dyadic data.
+- `X0::Vector{Int64}`: categorical vector of untreated covariates.
+- `X1::Vector{Int64}`: categorical vector of treated covariates.
 - `meta::Dict`: any extra information to pass to the estimator.
 """
-function DyadicKernelDensityEstimator(
+function CounterfactualDyadicKernelDensityEstimator(
     kernel_name::String,
     bandwidth::Float64,
     significance_level::Float64,
     n_resample::Int,
     sdp_solver::String,
     evals::Vector{Float64},
-    data::UpperTriangular{Float64},
+    W1::UpperTriangular{Float64},
+    X0::Vector{Int64},
+    X1::Vector{Int64},
     meta::Dict)
 
     @assert bandwidth > 0
@@ -68,10 +72,12 @@ function DyadicKernelDensityEstimator(
     @assert n_resample >= 1
 
     n_evals = length(evals)
-    n_data = size(data, 1)
+    n_data = size(W1, 1)
     N_data = Int(n_data * (n_data - 1) // 2)
+    @assert length(X0) == n_data
+    @assert length(X1) == n_data
 
-    est = DyadicKernelDensityEstimator(
+    est = CounterfactualDyadicKernelDensityEstimator(
 
         # input parameters
         kernel_name,
@@ -80,7 +86,9 @@ function DyadicKernelDensityEstimator(
         n_resample,
         sdp_solver,
         evals,
-        data,
+        W1,
+        X0,
+        X1,
         meta,
 
         # final products
@@ -105,7 +113,7 @@ function DyadicKernelDensityEstimator(
     for i in 1:n_data
         for j in 1:n_data
             if i < j
-                est.data_vec[index] = est.data[i,j]
+                est.W1_vec[index] = est.W1[i,j]
                 index += 1
             end
         end
@@ -115,7 +123,7 @@ function DyadicKernelDensityEstimator(
 
 end
 
-
+#=
 
 function estimate_fhat(est::DyadicKernelDensityEstimator)
 
