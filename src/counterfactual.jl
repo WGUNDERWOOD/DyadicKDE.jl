@@ -164,6 +164,29 @@ end
 
 
 
+function estimate_kappahat(est::CounterfactualDyadicKernelDensityEstimator)
+
+    phat0 = estimate_phat(est, 0)
+    phat1 = estimate_phat(est, 1)
+
+    term1 = zeros((est.n_data, est.n_data))
+    term2 = zeros((est.n_data, est.n_data))
+
+    for r in 1:est.n_data
+        for i in 1:est.n_data
+            term1[r,i] = ((est.X0[r] == est.X1[i]) - phat0[est.X1[i]]) / phat1[est.X1[i]]
+            term2[r,i] = (phat0[est.X1[i]] / phat1[est.X1[i]]) *
+                ((est.X1[r] == est.X1[i]) - phat1[est.X1[i]]) / phat1[est.X1[i]]
+        end
+    end
+
+    kappahat = term1 - term2
+
+    return kappahat
+end
+
+
+
 function estimate_fhat_cf(est::CounterfactualDyadicKernelDensityEstimator)
 
     est.fhat_cf .= 0
@@ -187,115 +210,153 @@ function estimate_fhat_cf(est::CounterfactualDyadicKernelDensityEstimator)
 
 end
 
-#=
 
-function estimate_conditional_expectation(est::DyadicKernelDensityEstimator)
+function estimate_conditional_expectation(est::CounterfactualDyadicKernelDensityEstimator)
 
+    S = zeros((est.n_evals, est.n_data))
+    Stilde = zeros((est.n_evals, est.n_data))
     cond_exp = zeros((est.n_evals, est.n_data))
 
+    psihat = estimate_psihat(est)
+    kappahat = estimate_kappahat(est)
+
+    # make S
     for k in 1:est.n_evals
 
         for i in 1:est.n_data
             for j in 1:est.n_data
 
                 if i < j
-                    if abs(est.data[i,j] - est.evals[k]) <= est.bandwidth
-                        cond_exp[k,i] += kernel(est.data[i,j], est.evals[k], est.bandwidth,
-                                                est.evals_min, est.evals_max, est.kernel_name)
+                    if abs(est.W[i,j] - est.evals[k]) <= est.bandwidth
+                        S[k,i] += kernel(
+                            est.W[i,j], est.evals[k], est.bandwidth,
+                            est.evals_min, est.evals_max, est.kernel_name
+                        ) * psihat[j]
                     end
 
                 elseif j < i
-                    if abs(est.data[j,i] - est.evals[k]) <= est.bandwidth
-                        cond_exp[k,i] += kernel(est.data[j,i], est.evals[k], est.bandwidth,
-                                                est.evals_min, est.evals_max, est.kernel_name)
+                    if abs(est.W[j,i] - est.evals[k]) <= est.bandwidth
+                        S[k,i] += kernel(
+                            est.W[j,i], est.evals[k], est.bandwidth,
+                            est.evals_min, est.evals_max, est.kernel_name
+                        ) * psihat[j]
                     end
                 end
             end
         end
     end
 
-    cond_exp /= (est.n_data - 1)
+    S /= (est.n_data - 1)
+
+    # make Stilde
+    for k in 1:est.n_evals
+
+        for i in 1:est.n_data
+            for j in 1:est.n_data
+                for r in 1:est.n_data
+                    if (j < r) && (i != j) && (i != r)
+
+                        if abs(est.W[r,j] - est.evals[k]) <= est.bandwidth
+                            Stilde[k,i] += kernel(
+                                est.W[r,j], est.evals[k], est.bandwidth,
+                                est.evals_min, est.evals_max, est.kernel_name
+                            ) * psihat[r] * kappahat[i,j]
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    Stilde *= 2 / ((est.n_data - 1) * (est.n_data - 2))
+
+    # make cond_exp
+    for k in 1:est.n_evals
+        for i in 1:est.n_data
+            cond_exp[k,i] = psihat[i] .* S[k,i] + Stilde[k,i]
+        end
+    end
 
     return cond_exp
 end
 
 
 
-function estimate_Sigmahat(est::DyadicKernelDensityEstimator)
+function estimate_Sigmahat_cf(est::CounterfactualDyadicKernelDensityEstimator)
 
     n = est.n_data
 
-    Sigmahat = zeros((est.n_evals, est.n_evals))
+    Sigmahat_cf = zeros((est.n_evals, est.n_evals))
     term1 = zeros((est.n_evals, est.n_evals))
     term2 = zeros((est.n_evals, est.n_evals))
     term3 = zeros((est.n_evals, est.n_evals))
 
     cond_exp = estimate_conditional_expectation(est)
+    psihat = estimate_psihat(est)
 
     for w1 in 1:est.n_evals
         for w2 in 1:est.n_evals
 
-            # Si Si' term
+            # conditional expectation term
             for i in 1:n
                 term1[w1,w2] += cond_exp[w1,i] * cond_exp[w2,i]
             end
             term1[w1,w2] *= (4 / (n^2))
 
-            # kij kij' term
+            # kij kij' psii^2 psij^2 term
             w_w1 = est.evals[w1]
             w_w2 = est.evals[w2]
 
             if abs(w_w1 - w_w2) <= 2 * est.bandwidth
-                for i in 1:est.N_data
-                    s = est.data_vec[i]
-                    term2[w1,w2] +=
-                        kernel(s, w_w1, est.bandwidth, est.evals_min,
-                               est.evals_max, est.kernel_name) *
-                        kernel(s, w_w2, est.bandwidth, est.evals_min,
-                               est.evals_max, est.kernel_name)
+                for i in 1:est.n_data
+                    for j in 1:est.n_data
+                        if i < j
+                        term2[w1,w2] +=
+                            kernel(
+                                est.W[i,j], w_w1, est.bandwidth, est.evals_min,
+                                est.evals_max, est.kernel_name
+                            ) * kernel(
+                                est.W[i,j], w_w2, est.bandwidth, est.evals_min,
+                                       est.evals_max, est.kernel_name
+                            ) * psihat[i]^2 * psihat[j]^2
+                        end
+                    end
                 end
             end
 
-            term2[w1,w2] *= (4 / (n^2 * (n - 1)^2))
+            term2[w1,w2] *= (4 / (n^3 * (n - 1)))
 
-            # fhat fhat' term
-            term3[w1,w2] += est.fhat[w1] * est.fhat[w2]
-            term3[w1,w2] *= (4 * n - 6) / (n * (n - 1))
+            # fhat_cf fhat_cf' term
+            term3[w1,w2] += est.fhat_cf[w1] * est.fhat_cf[w2]
+            term3[w1,w2] *= (4 / n)
 
             # combine terms
-            Sigmahat[w1,w2] = term1[w1,w2] - term2[w1,w2] - term3[w1,w2]
+            # TODO should this be (-term2)?
+            Sigmahat_cf[w1,w2] = term1[w1,w2] + term2[w1,w2] - term3[w1,w2]
 
         end
     end
 
-    est.Sigmahat = Symmetric(Sigmahat)
-    est.eigmin_Sigmahat = eigmin(est.Sigmahat)
+    est.Sigmahat_cf = Symmetric(Sigmahat_cf)
+    est.eigmin_Sigmahat_cf = eigmin(est.Sigmahat_cf)
 
 end
 
 
+function estimate_Sigmahatplus_cf(est::CounterfactualDyadicKernelDensityEstimator)
 
-function matrix_lipschitz_number(mat::Symmetric{Float64}, v::Vector{Float64})
+    # TODO reduce code reuse here and later
 
-    @assert size(mat, 1) == length(v)
-    steps = diff(mat, dims=1) ./ diff(v)
-    return maximum(steps)
-end
-
-
-
-function estimate_Sigmahatplus(est::DyadicKernelDensityEstimator)
-
-    if est.eigmin_Sigmahat >= 0
+    if est.eigmin_Sigmahat_cf >= 0
         # do nothing if already psd
-        est.Sigmahatplus = est.Sigmahat
+        est.Sigmahatplus_cf = est.Sigmahat_cf
 
     else
         # formulate optimization problem
-        d = diag(est.Sigmahat)
+        d = diag(est.Sigmahat_cf)
         sinv = 1 ./ sqrt.(d .+ d')
         C = Semidefinite(est.n_evals)
-        objective = maximum(abs(sinv .* (C - est.Sigmahat)))
+        objective = maximum(abs(sinv .* (C - est.Sigmahat_cf)))
         problem = minimize(objective)
 
         # solve optimization problem
@@ -308,23 +369,25 @@ function estimate_Sigmahatplus(est::DyadicKernelDensityEstimator)
         end
 
         # get answer
-        Sigmahatplus = Symmetric(evaluate(C))
-        mineig_optsol = max(-eigmin(Sigmahatplus), 0)
-        est.Sigmahatplus = Symmetric(Sigmahatplus + 2 * mineig_optsol * I)
+        Sigmahatplus_cf = Symmetric(evaluate(C))
+        mineig_optsol = max(-eigmin(Sigmahatplus_cf), 0)
+        est.Sigmahatplus_cf = Symmetric(Sigmahatplus_cf + 2 * mineig_optsol * I)
 
         # check lipschitz property
         n = est.n_data
         h = est.bandwidth
-        L = matrix_lipschitz_number(est.Sigmahatplus, est.evals)
+        L = matrix_lipschitz_number(est.Sigmahatplus_cf, est.evals)
         @assert L <= 4 / (n * h^3)
 
     end
 
-    est.eigmin_Sigmahatplus = eigmin(est.Sigmahatplus)
-    est.sdp_error = maximum(abs.(est.Sigmahatplus - est.Sigmahat))
-    @assert est.eigmin_Sigmahatplus >= 0
+    est.eigmin_Sigmahatplus_cf = eigmin(est.Sigmahatplus_cf)
+    est.sdp_error = maximum(abs.(est.Sigmahatplus_cf - est.Sigmahat_cf))
+    @assert est.eigmin_Sigmahatplus_cf >= 0
 
 end
+
+#=
 
 
 
@@ -467,27 +530,26 @@ Fit a counterfactual dyadic kernel density estimator to data.
 function fit(est::CounterfactualDyadicKernelDensityEstimator)
 
     estimate_fhat_cf(est)
-    #estimate_Sigmahat(est)
-    #estimate_Sigmahatplus(est)
+    estimate_Sigmahat_cf(est)
+    estimate_Sigmahatplus_cf(est)
     #estimate_uniform_confidence_band(est)
     #estimate_pointwise_confidence_intervals(est)
     #estimate_bonferroni_confidence_intervals(est)
 
 end
 
-#=
 
 
 
 """
-    display(est::DyadicKernelDensityEstimator)
+    display(est::CounterfactualDyadicKernelDensityEstimator)
 
-Display a dyadic kernel density estimator.
+Display a counterfactual dyadic kernel density estimator.
 """
-function Base.display(est::DyadicKernelDensityEstimator)
+function Base.display(est::CounterfactualDyadicKernelDensityEstimator)
 
-    println("DyadicKernelDensityEstimator")
-    println("----------------------------")
+    println("CounterfactualDyadicKernelDensityEstimator")
+    println("------------------------------------------")
 
     println("Kernel: ", est.kernel_name)
     println("Bandwidth: ", est.bandwidth)
@@ -496,12 +558,12 @@ function Base.display(est::DyadicKernelDensityEstimator)
     println("SDP solver: ", est.sdp_solver)
     println("Num. data nodes (n): ", est.n_data)
     println("Num. data points (N): ", est.N_data)
+    println("Num. covariate levels: ", est.X_levels)
     println("Num. evaluation points: ", est.n_evals)
     println("Min. evaluation point: ", est.evals_min)
     println("Max. evaluation point: ", est.evals_max)
-    println("Min. eigval of Sigmahat: ", est.eigmin_Sigmahat)
-    println("Min. eigval of Sigmahatplus: ", est.eigmin_Sigmahatplus)
+    println("Min. eigval of Sigmahat: ", est.eigmin_Sigmahat_cf)
+    println("Min. eigval of Sigmahatplus: ", est.eigmin_Sigmahatplus_cf)
     println("SDP error: ", est.sdp_error)
 
 end
-=#
