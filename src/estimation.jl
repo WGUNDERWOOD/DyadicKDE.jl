@@ -223,24 +223,26 @@ end
 
 
 
-function estimate_Sigmahatplus(est::DyadicKernelDensityEstimator)
+function estimate_Sigmahatplus(Sigmahat::Symmetric{Float64}, sdp_solver::String)
 
-    if est.eigmin_Sigmahat >= 0
+    eigmin_Sigmahat = eigmin(Sigmahat)
+
+    if eigmin_Sigmahat >= 0
         # do nothing if already psd
-        est.Sigmahatplus = est.Sigmahat
+        Sigmahatplus = Sigmahat
 
     else
         # formulate optimization problem
-        d = diag(est.Sigmahat)
+        d = diag(Sigmahat)
         sinv = 1 ./ sqrt.(d .+ d')
-        C = Semidefinite(est.n_evals)
-        objective = maximum(abs(sinv .* (C - est.Sigmahat)))
+        C = Semidefinite(size(Sigmahat, 1))
+        objective = maximum(abs(sinv .* (C - Sigmahat)))
         problem = minimize(objective)
 
         # solve optimization problem
-        if est.sdp_solver == "mosek"
+        if sdp_solver == "mosek"
             solve!(problem, Mosek.Optimizer, silent_solver=true)
-        elseif est.sdp_solver == "cosmo"
+        elseif sdp_solver == "cosmo"
             solve!(problem, COSMO.Optimizer, silent_solver=true)
         else
             error("Unknown sdp_solver")
@@ -249,19 +251,19 @@ function estimate_Sigmahatplus(est::DyadicKernelDensityEstimator)
         # get answer
         Sigmahatplus = Symmetric(evaluate(C))
         mineig_optsol = max(-eigmin(Sigmahatplus), 0)
-        est.Sigmahatplus = Symmetric(Sigmahatplus + 2 * mineig_optsol * I)
-
-        # check lipschitz property
-        n = est.n_data
-        h = est.bandwidth
-        L = matrix_lipschitz_number(est.Sigmahatplus, est.evals)
-        @assert L <= 4 / (n * h^3)
+        Sigmahatplus = Symmetric(Sigmahatplus + 2 * mineig_optsol * I)
 
     end
 
-    est.eigmin_Sigmahatplus = eigmin(est.Sigmahatplus)
-    est.sdp_error = maximum(abs.(est.Sigmahatplus - est.Sigmahat))
-    @assert est.eigmin_Sigmahatplus >= 0
+    eigmin_Sigmahatplus = eigmin(Sigmahatplus)
+    sdp_error = maximum(abs.(Sigmahatplus - Sigmahat))
+    @assert eigmin_Sigmahatplus >= 0
+
+    return Dict(
+        "Sigmahatplus" => Sigmahatplus,
+        "eigmin_Sigmahatplus" => eigmin_Sigmahatplus,
+        "sdp_error" => sdp_error
+    )
 
 end
 
@@ -278,16 +280,19 @@ end
 
 
 
-function estimate_uniform_confidence_band(est::DyadicKernelDensityEstimator)
+function estimate_uniform_confidence_band(
+    Sigmahatplus::Symmetric{Float64}, n_resample::Int64,
+    significance_level::Float64, fhat::Vector{Float64})
 
     # make GP distribution and scaling
-    gp_mu = zeros((est.n_evals))
-    gp = MvNormal(gp_mu, est.Sigmahatplus)
-    Sigmahatplus_diag_sqrt = sqrt.(diag(est.Sigmahatplus))
+    n_evals = length(fhat)
+    gp_mu = zeros(n_evals)
+    gp = MvNormal(gp_mu, Sigmahatplus)
+    Sigmahatplus_diag_sqrt = sqrt.(diag(Sigmahatplus))
 
-    sup_scaled_gps = zeros((est.n_resample))
+    sup_scaled_gps = zeros(n_resample)
 
-    for rep in 1:est.n_resample
+    for rep in 1:n_resample
 
         # sample and scale gp
         Z_hat = rand(gp)
@@ -299,49 +304,60 @@ function estimate_uniform_confidence_band(est::DyadicKernelDensityEstimator)
     end
 
     # get quantile
-    c = get_quantile(sup_scaled_gps, 1-est.significance_level)
+    c = get_quantile(sup_scaled_gps, 1 - significance_level)
     ucb_width = c .* Sigmahatplus_diag_sqrt
-    est.ucb[1,:] .= est.fhat .- ucb_width
-    est.ucb[2,:] .= est.fhat .+ ucb_width
+    ucb = fill(NaN, (2, n_evals))
+    ucb[1,:] .= fhat .- ucb_width
+    ucb[2,:] .= fhat .+ ucb_width
 
+    return ucb
 end
 
 
 
-function estimate_pointwise_confidence_intervals(est::DyadicKernelDensityEstimator)
+function estimate_pointwise_confidence_intervals(
+    Sigmahatplus::Symmetric{Float64}, significance_level::Float64,
+    fhat::Vector{Float64})
 
-    for k in 1:est.n_evals
+    n_evals = length(fhat)
+    pci = fill(NaN, (2, n_evals))
 
-        w = est.evals[k]
-        variance = est.Sigmahatplus[k,k]
+    for k in 1:n_evals
+
+        variance = Sigmahatplus[k,k]
         normal = Normal(0.0, sqrt(variance))
-        q = Statistics.quantile(normal, 1-(est.significance_level/2))
+        q = Statistics.quantile(normal, 1-(significance_level/2))
 
-        est.pci[1,k] = est.fhat[k] - q
-        est.pci[2,k] = est.fhat[k] + q
+        pci[1,k] = fhat[k] - q
+        pci[2,k] = fhat[k] + q
 
     end
 
+    return pci
 end
 
 
 
-function estimate_bonferroni_confidence_intervals(est::DyadicKernelDensityEstimator)
+function estimate_bonferroni_confidence_intervals(
+    Sigmahatplus::Symmetric{Float64}, significance_level::Float64,
+    fhat::Vector{Float64})
 
-    bonferroni_significance_level = est.significance_level / est.n_evals
+    n_evals = length(fhat)
+    bci = fill(NaN, (2, n_evals))
+    bonferroni_significance_level = significance_level / n_evals
 
-    for k in 1:est.n_evals
+    for k in 1:n_evals
 
-        w = est.evals[k]
-        variance = est.Sigmahatplus[k,k]
+        variance = Sigmahatplus[k,k]
         normal = Normal(0.0, sqrt(variance))
         q = Statistics.quantile(normal, 1-(bonferroni_significance_level/2))
 
-        est.bci[1,k] = est.fhat[k] - q
-        est.bci[2,k] = est.fhat[k] + q
+        bci[1,k] = fhat[k] - q
+        bci[2,k] = fhat[k] + q
 
     end
 
+    return bci
 end
 
 
@@ -406,10 +422,17 @@ function fit(est::DyadicKernelDensityEstimator)
 
     estimate_fhat(est)
     estimate_Sigmahat(est)
-    estimate_Sigmahatplus(est)
-    estimate_uniform_confidence_band(est)
-    estimate_pointwise_confidence_intervals(est)
-    estimate_bonferroni_confidence_intervals(est)
+    SDP = estimate_Sigmahatplus(est.Sigmahat, est.sdp_solver)
+    est.Sigmahatplus = SDP["Sigmahatplus"]
+    est.eigmin_Sigmahatplus = SDP["eigmin_Sigmahatplus"]
+    est.sdp_error = SDP["sdp_error"]
+    est.ucb = estimate_uniform_confidence_band(
+        est.Sigmahatplus, est.n_resample,
+        est.significance_level, est.fhat)
+    est.pci = estimate_pointwise_confidence_intervals(
+        est.Sigmahatplus, est.significance_level, est.fhat)
+    est.bci = estimate_bonferroni_confidence_intervals(
+        est.Sigmahatplus, est.significance_level, est.fhat)
 
 end
 
