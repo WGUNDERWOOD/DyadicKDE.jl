@@ -32,6 +32,7 @@ data_W_2000 = UpperTriangular(Array(data_W_2000))
 data_W_2000[data_W_2000 .== -Inf] .= -1e10
 data_W_2005 = DataFrame(CSV.File("data_W_2005.csv"))
 data_W_2005 = UpperTriangular(Array(data_W_2005))
+h_ROT = estimate_ROT_bandwidth(data_W_2005, "epanechnikov_order_2")
 data_W_2005[data_W_2005 .== -Inf] .= -1e10
 
 # X data
@@ -62,11 +63,10 @@ n_evals = 50
 kernel_name = "epanechnikov_order_4"
 evals = collect(range(-10.0, stop=10.0, length=n_evals))
 sdp_solver = "mosek"
-n_resample = 100
+n_resample = 10000
 significance_level = 0.05
 
 # fit estimators
-h_ROT = estimate_ROT_bandwidth(data_W_2005, "epanechnikov_order_2")
 est = DyadicKernelDensityEstimator(
     kernel_name, h_ROT, significance_level,
     n_resample, sdp_solver, evals,
