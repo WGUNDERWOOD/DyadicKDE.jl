@@ -211,6 +211,7 @@ function estimate_fhat(est::CounterfactualDyadicKernelDensityEstimator)
 end
 
 
+
 function estimate_conditional_expectation(est::CounterfactualDyadicKernelDensityEstimator)
 
     S = zeros((est.n_evals, est.n_data))
@@ -249,27 +250,19 @@ function estimate_conditional_expectation(est::CounterfactualDyadicKernelDensity
     S /= (est.n_data - 1)
 
     # make Stilde
-    # TODO speed this up
     for k in 1:est.n_evals
 
         for i in 1:est.n_data
             for j in 1:est.n_data
-                for r in 1:est.n_data
-                    if (j < r) && (i != j) && (i != r)
 
-                        if abs(est.W[r,j] - est.evals[k]) <= est.bandwidth
-                            Stilde[k,i] += kernel(
-                                est.W[r,j], est.evals[k], est.bandwidth,
-                                est.evals_min, est.evals_max, est.kernel_name
-                            ) * psihat[r] * kappahat[i,j]
-                        end
-                    end
+                if i != j
+                    Stilde[k,i] += kappahat[i,j] * S[k,j]
                 end
             end
         end
     end
 
-    Stilde *= 2 / ((est.n_data - 1) * (est.n_data - 2))
+    Stilde /= (est.n_data - 1)
 
     # make cond_exp
     for k in 1:est.n_evals
@@ -344,51 +337,6 @@ end
 
 
 
-#=
-
-
-function estimate_pointwise_confidence_intervals(est::DyadicKernelDensityEstimator)
-
-    for k in 1:est.n_evals
-
-        w = est.evals[k]
-        variance = est.Sigmahatplus[k,k]
-        normal = Normal(0.0, sqrt(variance))
-        q = Statistics.quantile(normal, 1-(est.significance_level/2))
-
-        est.pci[1,k] = est.fhat[k] - q
-        est.pci[2,k] = est.fhat[k] + q
-
-    end
-
-end
-
-
-
-function estimate_bonferroni_confidence_intervals(est::DyadicKernelDensityEstimator)
-
-    bonferroni_significance_level = est.significance_level / est.n_evals
-
-    for k in 1:est.n_evals
-
-        w = est.evals[k]
-        variance = est.Sigmahatplus[k,k]
-        normal = Normal(0.0, sqrt(variance))
-        q = Statistics.quantile(normal, 1-(bonferroni_significance_level/2))
-
-        est.bci[1,k] = est.fhat[k] - q
-        est.bci[2,k] = est.fhat[k] + q
-
-    end
-
-end
-
-
-
-
-
-=#
-
 """
     fit(est::CounterfactualDyadicKernelDensityEstimator)
 
@@ -411,7 +359,6 @@ function fit(est::CounterfactualDyadicKernelDensityEstimator)
         est.Sigmahatplus, est.significance_level, est.fhat)
 
 end
-
 
 
 

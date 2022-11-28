@@ -58,7 +58,7 @@ for year in 1:3
 end
 
 # estimation parameters
-n_evals = 30
+n_evals = 50
 kernel_name = "epanechnikov_order_4"
 evals = collect(range(-10.0, stop=10.0, length=n_evals))
 sdp_solver = "mosek"
@@ -98,8 +98,6 @@ plt.ylabel("Density", labelpad=4.0)
 plt.tight_layout()
 PyPlot.savefig("trade_plot_2005.pdf")
 close("all")
-
-display(est_cf.fhat)
 
 # plot counterfactual
 fig, ax = plt.subplots(figsize=(4,4))
