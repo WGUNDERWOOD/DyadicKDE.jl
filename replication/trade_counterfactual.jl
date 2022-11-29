@@ -45,9 +45,17 @@ for year0 in years
         h_ROT = estimate_ROT_bandwidth(data_W, "epanechnikov_order_2")
         data_W[data_W .== -Inf] .= -1e10
         data_X0 = DataFrame(CSV.File("data_X_" * year0 * ".csv"))
-        data_X0 = Array(data_X0.GDP_per_capita_bracket)
+        data_X0 = Array(data_X0.GDP_bracket)
         data_X1 = DataFrame(CSV.File("data_X_" * year1 * ".csv"))
-        data_X1 = Array(data_X1.GDP_per_capita_bracket)
+        data_X1 = Array(data_X1.GDP_bracket)
+
+        # fit estimator
+        est = DyadicKernelDensityEstimator(
+            kernel_name, h_ROT, significance_level,
+            n_resample, sdp_solver, evals,
+            data_W, Dict())
+
+        fit(est)
 
         if year0 == year1
 
@@ -63,34 +71,26 @@ for year0 in years
             println("Proportion of non-zero samples: $(round(nnz/N, digits=3))")
             println()
 
-            # fit estimator
-            est = DyadicKernelDensityEstimator(
-                kernel_name, h_ROT, significance_level,
-                n_resample, sdp_solver, evals,
-                data_W, Dict())
-
-            fit(est)
-
             # plot original
-            fig, ax = plt.subplots(figsize=(4,4))
-            ax.plot(est.evals, est.fhat,
-                    color = "black", linewidth=linewidth, linestyle=(0, (1,1)))
-            ax.fill_between(est.evals, est.ucb[1,:], est.ucb[2,:],
-                            color="lightgray", linewidth=0.0)
-            plot_confidence_intervals(ax, est.evals, est.pci[1,:],
-                                      est.pci[2,:], 10, "black", linewidth, "-")
-            PyPlot.xlabel("Bilateral trade volume")
-            plt.ylim(y_lim)
-            x_min = minimum(est.evals)
-            x_max = maximum(est.evals)
-            plt.xlim((x_min, x_max))
-            plt.yticks(range(0.0, stop=0.08, step=0.01))
-            legend(handles=handles, loc="upper left")
-            plt.ylabel("Density", labelpad=4.0)
-            plt.tight_layout()
-            PyPlot.savefig("trade_plot_" * year1 * ".pdf")
-            PyPlot.savefig("trade_plot_" * year1 * ".png")
-            close("all")
+            #fig, ax = plt.subplots(figsize=(4,4))
+            #ax.plot(est.evals, est.fhat,
+                    #color = "black", linewidth=linewidth, linestyle=(0, (1,1)))
+            #ax.fill_between(est.evals, est.ucb[1,:], est.ucb[2,:],
+                            #color="lightgray", linewidth=0.0)
+            #plot_confidence_intervals(ax, est.evals, est.pci[1,:],
+                                      #est.pci[2,:], 10, "black", linewidth, "-")
+            #PyPlot.xlabel("Bilateral trade volume")
+            #plt.ylim(y_lim)
+            #x_min = minimum(est.evals)
+            #x_max = maximum(est.evals)
+            #plt.xlim((x_min, x_max))
+            #plt.yticks(range(0.0, stop=0.08, step=0.01))
+            #legend(handles=handles, loc="upper left")
+            #plt.ylabel("Density", labelpad=4.0)
+            #plt.tight_layout()
+            #PyPlot.savefig("trade_plot_" * year1 * ".pdf")
+            #PyPlot.savefig("trade_plot_" * year1 * ".png")
+            #close("all")
 
         else
 
@@ -103,14 +103,17 @@ for year0 in years
 
             fit(est_cf)
 
+
             # plot counterfactual
             fig, ax = plt.subplots(figsize=(4,4))
             ax.plot(est_cf.evals, est_cf.fhat,
-                    color = "black", linewidth=linewidth, linestyle=(0, (1,1)))
+                    color = "purple", linewidth=linewidth, linestyle=(0, (1,1)))
+            ax.plot(est.evals, est.fhat,
+                    color = "darkgreen", linewidth=linewidth, linestyle=(0, (1,1)))
             ax.fill_between(est_cf.evals, est_cf.ucb[1,:], est_cf.ucb[2,:],
-                            color="lightgray", linewidth=0.0)
-            plot_confidence_intervals(ax, est_cf.evals, est_cf.pci[1,:],
-                                      est_cf.pci[2,:], 10, "black", linewidth, "-")
+                            color="orchid", linewidth=0.0, alpha=0.3)
+            ax.fill_between(est.evals, est.ucb[1,:], est.ucb[2,:],
+                            color="limegreen", linewidth=0.0, alpha=0.3)
             PyPlot.xlabel("Bilateral trade volume")
             plt.ylim(y_lim)
             x_min = minimum(est_cf.evals)
