@@ -7,6 +7,13 @@ Modules = [DyadicKDE]
 Pages   = ["estimation.jl", "kernels.jl"]
 ```
 
+## Counterfactual dyadic kernel density estimation
+
+```@autodocs
+Modules = [DyadicKDE]
+Pages   = ["counterfactual.jl"]
+```
+
 ## Helper functions
 
 ```@autodocs
