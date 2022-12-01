@@ -13,7 +13,7 @@ y_lim = [-0.003, 0.11]
 e = 0.22
 
 # estimation parameters
-n_evals = 50
+n_evals = 100
 kernel_name = "epanechnikov_order_4"
 evals = collect(range(-10.0, stop=10.0, length=n_evals))
 sdp_solver = "mosek"
@@ -46,18 +46,6 @@ for year1 in years
         data_W, Dict())
 
     fit(est)
-
-    # print metadata
-    println("$year0 ==> $year1")
-    n = size(data_W, 1)
-    N = 0.5 * n * (n-1)
-    nz = sum(data_W .<= -1e9)
-    nnz = N - nz
-    println("Number of nodes n: $n")
-    println("Number of total edges N: $N")
-    println("Number of non-zero samples: $nnz")
-    println("Proportion of non-zero samples: $(round(nnz/N, digits=3))")
-    println()
 
     if year0 == year1
 
