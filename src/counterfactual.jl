@@ -159,7 +159,6 @@ function estimate_psihat(est::CounterfactualDyadicKernelDensityEstimator)
     phat1 = estimate_phat(est, 1)
     psihat_values = phat0 ./ phat1
     psihat = [psihat_values[x] for x in est.X1]
-
 end
 
 
