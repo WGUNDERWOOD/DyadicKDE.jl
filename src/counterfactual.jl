@@ -1,6 +1,3 @@
-# TODO use est.W everywhere
-# TODO other notation?
-
 """
 Composite type to represent a counterfactual dyadic kernel density estimator.
 """

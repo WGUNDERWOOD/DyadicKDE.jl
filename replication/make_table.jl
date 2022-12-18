@@ -56,11 +56,16 @@ for degen in degeneracies
 
         p = ps[degen]
         h_ROT = mean([est.bandwidth for est in results_reduced])
-        RIMSE = mean([get_RIMSE(est) for est in results_reduced])
-        ucb_coverage = mean([get_ucb_coverage(est) for est in results_reduced])
-        pci_coverage = mean([get_pci_coverage(est) for est in results_reduced])
-        ucb_width = mean([get_ucb_average_width(est) for est in results_reduced])
-        pci_width = mean([get_pci_average_width(est) for est in results_reduced])
+        RIMSE = mean([get_RIMSE(est.fhat, DyadicKDE.get_f(est.meta["p"], est.evals))
+                      for est in results_reduced])
+        ucb_coverage = mean([get_coverage(est.ucb,
+                                          DyadicKDE.get_f(est.meta["p"], est.evals))
+                             for est in results_reduced])
+        pci_coverage = mean([get_coverage(est.pci,
+                                          DyadicKDE.get_f(est.meta["p"], est.evals))
+                             for est in results_reduced])
+        ucb_width = mean([get_average_width(est.ucb) for est in results_reduced])
+        pci_width = mean([get_average_width(est.pci) for est in results_reduced])
 
         println("π = $p")
         println("Degeneracy: $degen")

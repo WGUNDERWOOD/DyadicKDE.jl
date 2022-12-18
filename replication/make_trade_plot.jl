@@ -27,6 +27,8 @@ year0 = "1995"
 
 for year1 in years
 
+    println("Year: ", year1)
+
     # get year abbreviations
     yr0 = year0[3:4]
     yr1 = year1[3:4]
