@@ -32,20 +32,20 @@ for year1 in years
     yr1 = year1[3:4]
 
     # read data
-    data_W = DataFrame(CSV.File("data_W_" * year1 * ".csv"))
-    data_W = UpperTriangular(Array(data_W))
-    h_ROT = estimate_ROT_bandwidth(data_W, "epanechnikov_order_2")
-    data_W[data_W .== -Inf] .= -1e10
-    data_X0 = DataFrame(CSV.File("data_X_" * year0 * ".csv"))
-    data_X0 = Array(data_X0.GDP_bracket)
-    data_X1 = DataFrame(CSV.File("data_X_" * year1 * ".csv"))
-    data_X1 = Array(data_X1.GDP_bracket)
+    W = DataFrame(CSV.File("data_W_" * year1 * ".csv"))
+    W = UpperTriangular(Array(W))
+    h_ROT = estimate_ROT_bandwidth(W, "epanechnikov_order_2")
+    W[W .== -Inf] .= -1e10
+    X0 = DataFrame(CSV.File("data_X_" * year0 * ".csv"))
+    X0 = Array(X0.GDP_bracket)
+    X1 = DataFrame(CSV.File("data_X_" * year1 * ".csv"))
+    X1 = Array(X1.GDP_bracket)
 
     # fit observed estimator
     est = DyadicKernelDensityEstimator(
         kernel_name, h_ROT, significance_level,
         n_resample, sdp_solver, evals,
-        data_W, Dict())
+        W, Dict())
 
     fit(est)
 
@@ -85,7 +85,7 @@ for year1 in years
         est_cf = CounterfactualDyadicKernelDensityEstimator(
             kernel_name, h_ROT, significance_level,
             n_resample, sdp_solver, evals,
-            data_W, data_X0, data_X1,
+            W, X0, X1,
             Dict())
 
         fit(est_cf)

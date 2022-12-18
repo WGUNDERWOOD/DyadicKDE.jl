@@ -12,11 +12,11 @@ function make_dyadic_data(n_data::Int, p::Vector{Float64})
 
     c = cumsum(p)
     r = rand(n_data)
-    data_A = -1.0 * (r .<= c[1]) + 1.0 * (r .>= c[2])
-    data_V = randn((n_data, n_data))
-    data = UpperTriangular(data_A .* data_A' .+ data_V)
+    A = -1.0 * (r .<= c[1]) + 1.0 * (r .>= c[2])
+    V = randn((n_data, n_data))
+    W = UpperTriangular(A .* A' .+ V)
 
-    return data
+    return W
 end
 
 

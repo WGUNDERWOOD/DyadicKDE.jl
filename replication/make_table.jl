@@ -30,12 +30,12 @@ for degen in degeneracies
 
             global counter += 1
             println("Degeneracy: $degen, Kernel: $kernel_name, Repeat $counter/$n_repeats")
-            data = make_data(n_data, ps[degen])
-            h_ROT = estimate_ROT_bandwidth(data, "epanechnikov_order_2")
+            W = make_dyadic_data(n_data, ps[degen])
+            h_ROT = estimate_ROT_bandwidth(W, "epanechnikov_order_2")
 
             est = DyadicKernelDensityEstimator(
                 kernel_name, h_ROT, significance_level,
-                n_resample, sdp_solver, evals, data,
+                n_resample, sdp_solver, evals, W,
                 Dict("degen" => degen, "p" => ps[degen]))
 
             fit(est)

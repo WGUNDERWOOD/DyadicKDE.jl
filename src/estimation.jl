@@ -10,7 +10,7 @@ Base.@kwdef mutable struct DyadicKernelDensityEstimator
     n_resample::Int
     sdp_solver::String
     evals::Vector{Float64}
-    data::UpperTriangular{Float64}
+    W::UpperTriangular{Float64}
     meta::Dict
 
     # final products
@@ -19,7 +19,7 @@ Base.@kwdef mutable struct DyadicKernelDensityEstimator
     evals_max::Float64
     n_data::Int
     N_data::Int
-    data_vec::Vector{Float64}
+    W_vec::Vector{Float64}
     fhat::Vector{Float64}
     Sigmahat::Symmetric{Float64}
     Sigmahatplus::Symmetric{Float64}
@@ -35,7 +35,7 @@ end
 
 """
     DyadicKernelDensityEstimator(kernel_name, bandwidth, significance_level,
-                                 n_resample, sdp_solver, evals, data, meta)
+                                 n_resample, sdp_solver, evals, W, meta)
 
 Construct a dyadic kernel density estimator.
 
@@ -46,7 +46,7 @@ Construct a dyadic kernel density estimator.
 - `n_resample::Int`: the number of resamples used to construct the confidence band/intervals.
 - `sdp_solver::String`: semi-definite program solver.
 - `evals::Vector{Float64}`: points at which to evaluate the density estimator.
-- `data::UpperTriangular{Float64}`: array of dyadic data.
+- `W::UpperTriangular{Float64}`: array of dyadic data.
 - `meta::Dict`: any extra information to pass to the estimator.
 """
 function DyadicKernelDensityEstimator(
@@ -56,7 +56,7 @@ function DyadicKernelDensityEstimator(
     n_resample::Int,
     sdp_solver::String,
     evals::Vector{Float64},
-    data::UpperTriangular{Float64},
+    W::UpperTriangular{Float64},
     meta::Dict)
 
     @assert bandwidth > 0
@@ -64,7 +64,7 @@ function DyadicKernelDensityEstimator(
     @assert n_resample >= 1
 
     n_evals = length(evals)
-    n_data = size(data, 1)
+    n_data = size(W, 1)
     N_data = Int(n_data * (n_data - 1) // 2)
 
     est = DyadicKernelDensityEstimator(
@@ -76,7 +76,7 @@ function DyadicKernelDensityEstimator(
         n_resample,
         sdp_solver,
         evals,
-        data,
+        W,
         meta,
 
         # final products
@@ -101,7 +101,7 @@ function DyadicKernelDensityEstimator(
     for i in 1:n_data
         for j in 1:n_data
             if i < j
-                est.data_vec[index] = est.data[i,j]
+                est.W_vec[index] = est.W[i,j]
                 index += 1
             end
         end
@@ -117,7 +117,7 @@ function estimate_fhat(est::DyadicKernelDensityEstimator)
 
     for k in 1:est.n_evals
 
-        est.fhat[k] = sum(kernel.(est.data_vec, est.evals[k], est.bandwidth,
+        est.fhat[k] = sum(kernel.(est.W_vec, est.evals[k], est.bandwidth,
                                   est.evals_min, est.evals_max, est.kernel_name))
 
         est.fhat[k] /= est.N_data
@@ -137,14 +137,14 @@ function estimate_conditional_expectation(est::DyadicKernelDensityEstimator)
             for j in 1:est.n_data
 
                 if i < j
-                    if abs(est.data[i,j] - est.evals[k]) <= est.bandwidth
-                        cond_exp[k,i] += kernel(est.data[i,j], est.evals[k], est.bandwidth,
+                    if abs(est.W[i,j] - est.evals[k]) <= est.bandwidth
+                        cond_exp[k,i] += kernel(est.W[i,j], est.evals[k], est.bandwidth,
                                                 est.evals_min, est.evals_max, est.kernel_name)
                     end
 
                 elseif j < i
-                    if abs(est.data[j,i] - est.evals[k]) <= est.bandwidth
-                        cond_exp[k,i] += kernel(est.data[j,i], est.evals[k], est.bandwidth,
+                    if abs(est.W[j,i] - est.evals[k]) <= est.bandwidth
+                        cond_exp[k,i] += kernel(est.W[j,i], est.evals[k], est.bandwidth,
                                                 est.evals_min, est.evals_max, est.kernel_name)
                     end
                 end
@@ -185,7 +185,7 @@ function estimate_Sigmahat(est::DyadicKernelDensityEstimator)
 
             if abs(w_w1 - w_w2) <= 2 * est.bandwidth
                 for i in 1:est.N_data
-                    s = est.data_vec[i]
+                    s = est.W_vec[i]
                     term2[w1,w2] +=
                         kernel(s, w_w1, est.bandwidth, est.evals_min,
                                est.evals_max, est.kernel_name) *
@@ -362,24 +362,23 @@ end
 
 
 """
-    estimate_ROT_bandwidth(data::UpperTriangular{Float64},
+    estimate_ROT_bandwidth(W::UpperTriangular{Float64},
                            kernel_name::String)
 
 Estimate a rule-of-thumb bandwidth from dyadic data.
 """
-function estimate_ROT_bandwidth(data::UpperTriangular{Float64},
-                                kernel_name::String)
+function estimate_ROT_bandwidth(W::UpperTriangular{Float64}, kernel_name::String)
 
     # get data_vec
-    n_data = size(data, 1)
+    n_data = size(W, 1)
     N_data = Int(n_data * (n_data - 1) // 2)
-    data_vec = Float64[]
+    W_vec = Float64[]
 
     for i in 1:n_data
         for j in 1:n_data
             if i < j
-                if -Inf < data[i,j] < Inf
-                    push!(data_vec, data[i,j])
+                if -Inf < W[i,j] < Inf
+                    push!(W_vec, W[i,j])
                 end
             end
         end
@@ -389,14 +388,14 @@ function estimate_ROT_bandwidth(data::UpperTriangular{Float64},
     if kernel_name == "epanechnikov_order_2"
 
         # sigmahat_W
-        mean_W = mean(data_vec)
-        sum_of_squares_W = sum((data_vec .- mean_W).^2)
-        sigmahat_W_squared = sum_of_squares_W / (length(data_vec) - 1)
+        mean_W = mean(W_vec)
+        sum_of_squares_W = sum((W_vec .- mean_W).^2)
+        sigmahat_W_squared = sum_of_squares_W / (length(W_vec) - 1)
         sigmahat_W = sqrt(sigmahat_W_squared)
 
         # IQRhat
-        upper_quartile = get_quantile(data_vec, 0.75)
-        lower_quartile = get_quantile(data_vec, 0.25)
+        upper_quartile = get_quantile(W_vec, 0.75)
+        lower_quartile = get_quantile(W_vec, 0.25)
         IQRhat = upper_quartile - lower_quartile
 
         # n_rate

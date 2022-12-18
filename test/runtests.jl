@@ -75,8 +75,8 @@ end
     p = [0.25, 0.0, 0.75]
 
     for rep in 1:5
-        data = make_dyadic_data(n_data, p)
-        h_ROT = estimate_ROT_bandwidth(data, "epanechnikov_order_2")
+        W = make_dyadic_data(n_data, p)
+        h_ROT = estimate_ROT_bandwidth(W, "epanechnikov_order_2")
         @test 0.24 <= h_ROT <= 0.25
     end
 end
@@ -101,13 +101,13 @@ end
 
         for p in ps
 
-            data = make_dyadic_data(n_data, p)
+            W = make_dyadic_data(n_data, p)
 
             for kernel_name in kernel_names
 
                 est = DyadicKernelDensityEstimator(
                     kernel_name, bandwidth, significance_level,
-                    n_resample, sdp_solver, evals, data,
+                    n_resample, sdp_solver, evals, W,
                     Dict("p" => p))
 
                 fit(est)
@@ -158,16 +158,16 @@ end
 
     for rep in 1:5
 
-        data_W = make_dyadic_data(n_data, p)
-        data_X0 = [Int(1 + round(2 * rand())) for _ in 1:n_data]
-        data_X1 = [Int(1 + round(2 * rand())) for _ in 1:n_data]
+        W = make_dyadic_data(n_data, p)
+        X0 = [Int(1 + round(2 * rand())) for _ in 1:n_data]
+        X1 = [Int(1 + round(2 * rand())) for _ in 1:n_data]
 
         for kernel_name in kernel_names
 
             est = CounterfactualDyadicKernelDensityEstimator(
                 kernel_name, bandwidth, significance_level,
                 n_resample, sdp_solver, evals,
-                data_W, data_X0, data_X1,
+                W, X0, X1,
                 Dict("p" => p))
 
             fit(est)
@@ -212,14 +212,14 @@ end
 
     evals = collect(range(-2.0, stop=2.0, length=10))
     p = [0.5, 0.0, 0.5]
-    data = make_dyadic_data(50, p)
+    W = make_dyadic_data(50, p)
     est = DyadicKernelDensityEstimator(
         "epanechnikov_order_2", 0.8, 0.5,
-        10, "not_a_valid_sdp_solver_name", evals, data,
+        10, "not_a_valid_sdp_solver_name", evals, W,
         Dict("p" => p))
 
     @test_throws ErrorException("Unknown sdp_solver") fit(est)
 
     @test_throws ErrorException("Unknown kernel_name") estimate_ROT_bandwidth(
-        data, "epanechnikov_order_4")
+        W, "epanechnikov_order_4")
 end

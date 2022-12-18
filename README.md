@@ -82,13 +82,13 @@ significance_level = 0.05
 p = [0.25, 0.0, 0.75]
 
 # make data and get bandwidth
-data = make_data(n_data, p)
-h_ROT = estimate_ROT_bandwidth(data, "epanechnikov_order_2")
+W = make_data(n_data, p)
+h_ROT = estimate_ROT_bandwidth(W, "epanechnikov_order_2")
 
 # fit dyadic kernel density estimator
 est = DyadicKernelDensityEstimator(
     kernel_name, h_ROT, significance_level,
-    n_resample, sdp_solver, evals, data, Dict())
+    n_resample, sdp_solver, evals, W, Dict())
 
 fit(est)
 
