@@ -1,8 +1,9 @@
-using Revise
+# generate the trade plots found in
+# https://arxiv.org/abs/2201.05967
+
 using CSV
 using DataFrames
 using LinearAlgebra
-using UnicodePlots
 using DyadicKDE
 
 include("./plot_helpers.jl")
@@ -26,6 +27,7 @@ year0 = "1995"
 
 for year1 in years
 
+    # get year abbreviations
     yr0 = year0[3:4]
     yr1 = year1[3:4]
 
@@ -39,7 +41,7 @@ for year1 in years
     data_X1 = DataFrame(CSV.File("data_X_" * year1 * ".csv"))
     data_X1 = Array(data_X1.GDP_bracket)
 
-    # fit original estimator
+    # fit observed estimator
     est = DyadicKernelDensityEstimator(
         kernel_name, h_ROT, significance_level,
         n_resample, sdp_solver, evals,
@@ -49,7 +51,7 @@ for year1 in years
 
     if year0 == year1
 
-        # legend original
+        # legend observed
         handle_fhat = PyPlot.matplotlib.lines.Line2D(
             [0], [0], color="k", lw=linewidth, linestyle=(0, (1,1)),
             label="\$\\widehat f_W^{\\," * yr1 * "}(w)\$")
@@ -58,7 +60,7 @@ for year1 in years
             label="UCB for \$f_W^{" * yr1 * "}(w)\$")
         handles = [handle_fhat, handle_ucb]
 
-        # plot original
+        # plot observed
         fig, ax = plt.subplots(figsize=(4,4))
         ax.plot(est.evals, est.fhat,
                 color = "black", linewidth=linewidth, linestyle=(0, (1,1)))

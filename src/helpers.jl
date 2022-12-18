@@ -1,9 +1,9 @@
 """
-    make_data(n_data::Int, p::Vector{Float64})
+    make_dyadic_data(n_data::Int, p::Vector{Float64})
 
 Generate some example dyadic data using a Gaussian mixture model.
 """
-function make_data(n_data::Int, p::Vector{Float64})
+function make_dyadic_data(n_data::Int, p::Vector{Float64})
 
     @assert n_data >= 2
     @assert sum(p) == 1.0
@@ -46,101 +46,47 @@ end
 
 
 """
-    get_f(est::DyadicKernelDensityEstimator)
+    get_f(p::Vector{Float64}, evals::Vector{Float64})
 
 Get the true density function from example dyadic Gaussian mixture data.
 """
-function get_f(est::DyadicKernelDensityEstimator)
+function get_f(p::Vector{Float64}, evals::Vector{Float64})
 
-    p = est.meta["p"]
-    f = (p[1]^2 + p[3]^2) * phi.(est.evals .- 1)
-    f += p[2]*(2 - p[2]) * phi.(est.evals)
-    f += 2*p[1]*p[3] * phi.(est.evals .+ 1)
+    f = (p[1]^2 + p[3]^2) * phi.(evals .- 1)
+    f += p[2]*(2 - p[2]) * phi.(evals)
+    f += 2*p[1]*p[3] * phi.(evals .+ 1)
     return f
 end
 
 
 
 """
-    get_RIMSE(est::DyadicKernelDensityEstimator)
+    get_RIMSE(fhat::Vector{Float64}, f::Vector{Float64})
 
-Compute the root integrated mean squared error.
+Compute the root integrated mean squared error of an estimate for a function.
 """
-function get_RIMSE(est::DyadicKernelDensityEstimator)
-
-    f = get_f(est)
-    RMSE = sqrt(mean((est.fhat .- f).^2))
-    return RMSE
+function get_RIMSE(fhat::Vector{Float64}, f::Vector{Float64})
+    return sqrt(mean((fhat .- f).^2))
 end
 
 
 
 """
-    get_ucb_coverage(est::DyadicKernelDensityEstimator)
+    get_coverage(cb::Matrix{Float64}, f::Vector{Float64})
 
-Check if the uniform confidence band covers the true density function.
+Check if a confidence band covers the true density function.
 """
-function get_ucb_coverage(est::DyadicKernelDensityEstimator)
-
-    return all(est.ucb[1,:] .<= get_f(est) .<= est.ucb[2,:])
+function get_coverage(cb::Matrix{Float64}, f::Vector{Float64})
+    return all(cb[1,:] .<= f .<= cb[2,:])
 end
 
 
 
 """
-    get_pci_coverage(est::DyadicKernelDensityEstimator)
+    get_average_width(cb::Matrix{Float64})
 
-Check if the pointwise confidence intervals all cover the true density function.
+Return the average width of a confidence band.
 """
-function get_pci_coverage(est::DyadicKernelDensityEstimator)
-
-    return all(est.pci[1,:] .<= get_f(est) .<= est.pci[2,:])
-end
-
-
-
-"""
-    get_bci_coverage(est::DyadicKernelDensityEstimator)
-
-Check if the Bonferroni confidence intervals all cover the true density function.
-"""
-function get_bci_coverage(est::DyadicKernelDensityEstimator)
-
-    return all(est.bci[1,:] .<= get_f(est) .<= est.bci[2,:])
-end
-
-
-
-"""
-    get_ucb_average_width(est::DyadicKernelDensityEstimator)
-
-Return the average width of the uniform confidence band.
-"""
-function get_ucb_average_width(est::DyadicKernelDensityEstimator)
-
-    return mean(est.ucb[2,:] .- est.ucb[1,:])
-end
-
-
-
-"""
-    get_pci_average_width(est::DyadicKernelDensityEstimator)
-
-Return the average width of the pointwise confidence intervals.
-"""
-function get_pci_average_width(est::DyadicKernelDensityEstimator)
-
-    return mean(est.pci[2,:] .- est.pci[1,:])
-end
-
-
-
-"""
-    get_bci_average_width(est::DyadicKernelDensityEstimator)
-
-Return the average width of the Bonferroni confidence intervals.
-"""
-function get_bci_average_width(est::DyadicKernelDensityEstimator)
-
-    return mean(est.bci[2,:] .- est.bci[1,:])
+function get_average_width(cb::Matrix{Float64})
+    return mean(cb[2,:] .- cb[1,:])
 end

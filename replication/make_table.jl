@@ -4,7 +4,7 @@
 using DyadicKDE
 
 # specify parameters
-n_data = 500
+n_data = 3000
 n_evals = 50
 n_repeats = 2000
 degeneracies = ["total", "partial", "none"]

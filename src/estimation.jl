@@ -12,7 +12,6 @@ Base.@kwdef mutable struct DyadicKernelDensityEstimator
     evals::Vector{Float64}
     data::UpperTriangular{Float64}
     meta::Dict
-    # TODO remove this meta part?
 
     # final products
     n_evals::Int
@@ -390,7 +389,7 @@ function estimate_ROT_bandwidth(data::UpperTriangular{Float64},
     if kernel_name == "epanechnikov_order_2"
 
         # sigmahat_W
-        mean_W = sum(data_vec) / length(data_vec)
+        mean_W = mean(data_vec)
         sum_of_squares_W = sum((data_vec .- mean_W).^2)
         sigmahat_W_squared = sum_of_squares_W / (length(data_vec) - 1)
         sigmahat_W = sqrt(sigmahat_W_squared)

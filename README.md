@@ -25,6 +25,7 @@ In particular, the package provides the capability for computing
 - Bonferroni-corrected confidence intervals
 - Uniform confidence bands
 - A rule-of-thumb bandwidth selector
+- Counterfactual dyadic density estimation
 
 The currently supported kernels are
 

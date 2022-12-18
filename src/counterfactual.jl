@@ -1,3 +1,6 @@
+# TODO use est.W everywhere
+# TODO other notation?
+
 """
 Composite type to represent a counterfactual dyadic kernel density estimator.
 """
@@ -183,7 +186,6 @@ function estimate_kappahat(est::CounterfactualDyadicKernelDensityEstimator)
 
     return kappahat
 end
-
 
 
 function estimate_fhat(est::CounterfactualDyadicKernelDensityEstimator)
