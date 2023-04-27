@@ -16,7 +16,7 @@ println("Making plots")
 linewidth = 1.0
 y_lim = [-0.01, 0.45]
 handle_f = PyPlot.matplotlib.lines.Line2D([0], [0], color="k", lw=linewidth, label="\$f_W(w)\$")
-label="\$\\mathrm{Var}[f_{W \\mid A}(w \\mid A_i)]^{1/2}\$"
+label = "\$\\mathrm{Var}[f_{W \\mid A}(w \\mid A_i)]^{1/2}\$"
 handle_Var_f_given_A = PyPlot.matplotlib.lines.Line2D([0], [0], color="k", lw=linewidth,
                                                       label=label)
 handles = [handle_f, handle_Var_f_given_A]
