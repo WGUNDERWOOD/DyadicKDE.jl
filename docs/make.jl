@@ -3,15 +3,9 @@
 using Documenter
 using DyadicKDE
 
-makedocs(
-    sitename = "DyadicKDE.jl",
-    modules = DyadicKDE,
-    pages = [
-        "Home" => "index.md",
-        "Documentation" => "documentation.md",
-    ],
-)
+makedocs(sitename="DyadicKDE.jl",
+         modules=DyadicKDE,
+         pages=["Home" => "index.md",
+                "Documentation" => "documentation.md"])
 
-deploydocs(
-    repo = "github.com/WGUNDERWOOD/DyadicKDE.jl.git",
-)
+deploydocs(repo="github.com/WGUNDERWOOD/DyadicKDE.jl.git")

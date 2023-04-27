@@ -24,9 +24,7 @@ significance_level = 0.05
 years = ["1995", "2000", "2005"]
 year0 = "1995"
 
-
 for year1 in years
-
     println("Year: ", year1)
 
     # get year abbreviations
@@ -44,29 +42,27 @@ for year1 in years
     X1 = Array(X1.GDP_bracket)
 
     # fit observed estimator
-    est = DyadicKernelDensityEstimator(
-        kernel_name, h_ROT, significance_level,
-        n_resample, sdp_solver, evals,
-        W, Dict())
+    est = DyadicKernelDensityEstimator(kernel_name, h_ROT, significance_level,
+                                       n_resample, sdp_solver, evals,
+                                       W, Dict())
 
     fit(est)
 
     if year0 == year1
 
         # legend observed
-        handle_fhat = PyPlot.matplotlib.lines.Line2D(
-            [0], [0], color="k", lw=linewidth, linestyle=(0, (1,1)),
-            label="\$\\widehat f_W^{\\," * yr1 * "}(w)\$")
-        handle_ucb = PyPlot.matplotlib.patches.Patch(
-            facecolor="lightgray", edgecolor="lightgray",
-            label="UCB for \$f_W^{" * yr1 * "}(w)\$")
+        handle_fhat = PyPlot.matplotlib.lines.Line2D([0], [0], color="k", lw=linewidth,
+                                                     linestyle=(0, (1, 1)),
+                                                     label="\$\\widehat f_W^{\\," * yr1 * "}(w)\$")
+        handle_ucb = PyPlot.matplotlib.patches.Patch(facecolor="lightgray", edgecolor="lightgray",
+                                                     label="UCB for \$f_W^{" * yr1 * "}(w)\$")
         handles = [handle_fhat, handle_ucb]
 
         # plot observed
-        fig, ax = plt.subplots(figsize=(4,4))
+        fig, ax = plt.subplots(figsize=(4, 4))
         ax.plot(est.evals, est.fhat,
-                color = "black", linewidth=linewidth, linestyle=(0, (1,1)))
-        ax.fill_between(est.evals, est.ucb[1,:], est.ucb[2,:],
+                color="black", linewidth=linewidth, linestyle=(0, (1, 1)))
+        ax.fill_between(est.evals, est.ucb[1, :], est.ucb[2, :],
                         color="lightgray", linewidth=0.0)
 
         PyPlot.xlabel("Bilateral trade volume")
@@ -84,42 +80,42 @@ for year1 in years
     else
 
         # fit estimator
-        est_cf = CounterfactualDyadicKernelDensityEstimator(
-            kernel_name, h_ROT, significance_level,
-            n_resample, sdp_solver, evals,
-            W, X0, X1,
-            Dict())
+        est_cf = CounterfactualDyadicKernelDensityEstimator(kernel_name, h_ROT, significance_level,
+                                                            n_resample, sdp_solver, evals,
+                                                            W, X0, X1,
+                                                            Dict())
 
         fit(est_cf)
 
         # legend cf
-        handle_fhat = PyPlot.matplotlib.lines.Line2D(
-            [0], [0], color="k", lw=linewidth, linestyle=(0, (1,1)),
-            label="\$\\widehat f_W^{\\," * yr1 * "}(w)\$")
-        handle_ucb = PyPlot.matplotlib.patches.Patch(
-            facecolor="lightgray", edgecolor="lightgray",
-            label="UCB for \$f_W^{" * yr1 * "}(w)\$")
-        handle_fhat_cf = PyPlot.matplotlib.lines.Line2D(
-            [0], [0], color="royalblue", lw=linewidth, linestyle=(0, (1,1)),
-            label="\$\\widehat f_W^{\\," * yr1 * "\\triangleright" * yr0 * "}(w)\$")
-        handle_ucb_cf = PyPlot.matplotlib.patches.Patch(
-            facecolor="cornflowerblue", edgecolor="cornflowerblue", alpha=0.4,
-            label="UCB for \$f_W^{" * yr1 * "\\triangleright" * yr0 * "}(w)\$")
+        handle_fhat = PyPlot.matplotlib.lines.Line2D([0], [0], color="k", lw=linewidth,
+                                                     linestyle=(0, (1, 1)),
+                                                     label="\$\\widehat f_W^{\\," * yr1 * "}(w)\$")
+        handle_ucb = PyPlot.matplotlib.patches.Patch(facecolor="lightgray", edgecolor="lightgray",
+                                                     label="UCB for \$f_W^{" * yr1 * "}(w)\$")
+        handle_fhat_cf = PyPlot.matplotlib.lines.Line2D([0], [0], color="royalblue", lw=linewidth,
+                                                        linestyle=(0, (1, 1)),
+                                                        label="\$\\widehat f_W^{\\," * yr1 *
+                                                              "\\triangleright" * yr0 * "}(w)\$")
+        handle_ucb_cf = PyPlot.matplotlib.patches.Patch(facecolor="cornflowerblue",
+                                                        edgecolor="cornflowerblue", alpha=0.4,
+                                                        label="UCB for \$f_W^{" * yr1 *
+                                                              "\\triangleright" * yr0 * "}(w)\$")
         handles = [handle_fhat, handle_fhat_cf, handle_ucb, handle_ucb_cf]
 
         # plot counterfactual
-        fig, ax = plt.subplots(figsize=(4,4))
+        fig, ax = plt.subplots(figsize=(4, 4))
 
         # est
         ax.plot(est.evals, est.fhat,
-                color = "black", linewidth=linewidth, linestyle=(0, (1,1)))
-        ax.fill_between(est.evals, est.ucb[1,:], est.ucb[2,:],
+                color="black", linewidth=linewidth, linestyle=(0, (1, 1)))
+        ax.fill_between(est.evals, est.ucb[1, :], est.ucb[2, :],
                         color="lightgray", linewidth=0.0)
 
         # est_cf
         ax.plot(est_cf.evals, est_cf.fhat,
-                color = "royalblue", linewidth=linewidth, linestyle=(0, (1,1)))
-        ax.fill_between(est_cf.evals, est_cf.ucb[1,:], est_cf.ucb[2,:],
+                color="royalblue", linewidth=linewidth, linestyle=(0, (1, 1)))
+        ax.fill_between(est_cf.evals, est_cf.ucb[1, :], est_cf.ucb[2, :],
                         color="cornflowerblue", linewidth=0.0, alpha=0.3)
 
         PyPlot.xlabel("Bilateral trade volume")
