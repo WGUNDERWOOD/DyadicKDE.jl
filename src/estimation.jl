@@ -188,12 +188,6 @@ function estimate_Sigmahat(est::DyadicKernelDensityEstimator)
     return est.eigmin_Sigmahat = eigmin(est.Sigmahat)
 end
 
-function matrix_lipschitz_number(mat::Symmetric{Float64}, v::Vector{Float64})
-    @assert size(mat, 1) == length(v)
-    steps = diff(mat, dims=1) ./ diff(v)
-    return maximum(steps)
-end
-
 function estimate_Sigmahatplus(Sigmahat::Symmetric{Float64}, sdp_solver::String)
     eigmin_Sigmahat = eigmin(Sigmahat)
 

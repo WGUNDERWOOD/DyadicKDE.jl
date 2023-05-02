@@ -126,8 +126,6 @@ function estimate_phat(est::CounterfactualDyadicKernelDensityEstimator, treatmen
         X = est.X0
     elseif treatment == 1
         X = est.X1
-    else
-        error("invalid treatment")
     end
 
     phat = fill(0.0, est.X_levels)
