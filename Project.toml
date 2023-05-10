@@ -1,7 +1,7 @@
 name = "DyadicKDE"
 uuid = "db2c278d-83f0-4638-b51a-78d51d6a70fe"
 authors = ["William G Underwood <42812654+WGUNDERWOOD@users.noreply.github.com> and contributors"]
-version = "0.1.4"
+version = "0.1.5"
 
 [deps]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
