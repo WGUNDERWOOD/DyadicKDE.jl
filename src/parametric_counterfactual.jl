@@ -107,8 +107,10 @@ function ParametricCounterfactualDyadicKernelDensityEstimator(kernel_name::Strin
                                                                X_levels,
                                                                fill(NaN, (N_data)),
                                                                fill(NaN, (n_evals)),
-                                                               Symmetric(fill(NaN, (n_evals, n_evals))),
-                                                               Symmetric(fill(NaN, (n_evals, n_evals))),
+                                                               Symmetric(fill(NaN,
+                                                                              (n_evals, n_evals))),
+                                                               Symmetric(fill(NaN,
+                                                                              (n_evals, n_evals))),
                                                                NaN,
                                                                NaN,
                                                                NaN,
@@ -129,12 +131,12 @@ function ParametricCounterfactualDyadicKernelDensityEstimator(kernel_name::Strin
     return est
 end
 
-function estimate_psihat(est::CounterfactualDyadicKernelDensityEstimator)
+function estimate_psihat(est::ParametricCounterfactualDyadicKernelDensityEstimator)
     psihat_values = est.phat0 ./ est.phat1
     return psihat = [psihat_values[x] for x in est.X1]
 end
 
-function estimate_kappahat(est::CounterfactualDyadicKernelDensityEstimator)
+function estimate_kappahat(est::ParametricCounterfactualDyadicKernelDensityEstimator)
     term1 = zeros((est.n_data, est.n_data))
     term2 = zeros((est.n_data, est.n_data))
 
@@ -151,7 +153,7 @@ function estimate_kappahat(est::CounterfactualDyadicKernelDensityEstimator)
     return kappahat
 end
 
-function estimate_fhat(est::CounterfactualDyadicKernelDensityEstimator)
+function estimate_fhat(est::ParametricCounterfactualDyadicKernelDensityEstimator)
     est.fhat .= 0
     psihat = estimate_psihat(est)
 
@@ -171,7 +173,7 @@ function estimate_fhat(est::CounterfactualDyadicKernelDensityEstimator)
     end
 end
 
-function estimate_conditional_expectation(est::CounterfactualDyadicKernelDensityEstimator)
+function estimate_conditional_expectation(est::ParametricCounterfactualDyadicKernelDensityEstimator)
     S = zeros((est.n_evals, est.n_data))
     Stilde = zeros((est.n_evals, est.n_data))
     cond_exp = zeros((est.n_evals, est.n_data))
@@ -224,7 +226,7 @@ function estimate_conditional_expectation(est::CounterfactualDyadicKernelDensity
     return cond_exp
 end
 
-function estimate_Sigmahat(est::CounterfactualDyadicKernelDensityEstimator)
+function estimate_Sigmahat(est::ParametricCounterfactualDyadicKernelDensityEstimator)
     n = est.n_data
 
     Sigmahat = zeros((est.n_evals, est.n_evals))
@@ -278,11 +280,11 @@ function estimate_Sigmahat(est::CounterfactualDyadicKernelDensityEstimator)
 end
 
 """
-    fit(est::CounterfactualDyadicKernelDensityEstimator)
+    fit(est::ParametricCounterfactualDyadicKernelDensityEstimator)
 
-Fit a counterfactual dyadic kernel density estimator to data.
+Fit a parametric counterfactual dyadic kernel density estimator to data.
 """
-function fit(est::CounterfactualDyadicKernelDensityEstimator)
+function fit(est::ParametricCounterfactualDyadicKernelDensityEstimator)
     estimate_fhat(est)
     estimate_Sigmahat(est)
     SDP = estimate_Sigmahatplus(est.Sigmahat, est.sdp_solver)
@@ -298,12 +300,12 @@ function fit(est::CounterfactualDyadicKernelDensityEstimator)
 end
 
 """
-    display(est::CounterfactualDyadicKernelDensityEstimator)
+    display(est::ParametricCounterfactualDyadicKernelDensityEstimator)
 
-Display a counterfactual dyadic kernel density estimator.
+Display a parametric counterfactual dyadic kernel density estimator.
 """
-function Base.display(est::CounterfactualDyadicKernelDensityEstimator)
-    println("CounterfactualDyadicKernelDensityEstimator")
+function Base.display(est::ParametricCounterfactualDyadicKernelDensityEstimator)
+    println("ParametricCounterfactualDyadicKernelDensityEstimator")
     println("------------------------------------------")
 
     println("Kernel: ", est.kernel_name)

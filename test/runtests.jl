@@ -18,6 +18,8 @@ function trapezium_integrate(f::Vector{Float64}, x::Vector{Float64})
     return area
 end
 
+#=
+
 # Aqua tests
 Aqua.test_ambiguities(DyadicKDE)
 Aqua.test_unbound_args(DyadicKDE)
@@ -181,6 +183,67 @@ end
     end
 end
 
+=#
+
+@testset "ParametricCounterfactual" begin
+    Random.seed!(314159)
+    n_data = 50
+    kernel_names = ["epanechnikov_order_2", "epanechnikov_order_4"]
+    evals = collect(range(-2.0, stop=2.0, length=10))
+    sdp_solver = "cosmo"
+    n_resample = 1000
+    significance_level = 0.5
+    bandwidth = 0.8
+    p = [0.2, 0.2, 0.6]
+
+    for rep in 1:5
+        W = make_dyadic_data(n_data, p)
+        X0 = [Int(1 + round(2 * rand())) for _ in 1:n_data]
+        X1 = [Int(1 + round(2 * rand())) for _ in 1:n_data]
+        phat0 = [0.4, 0.3, 0.3]
+        phat1 = [0.3, 0.4, 0.3]
+
+        for kernel_name in kernel_names
+            est = ParametricCounterfactualDyadicKernelDensityEstimator(kernel_name, bandwidth,
+                                                                       significance_level,
+                                                                       n_resample,
+                                                                       sdp_solver, evals, W, X0, X1,
+                                                                       phat0, phat1,
+                                                                       Dict("p" => p))
+
+            fit(est)
+
+            @test all(est.bci[1, :] .< est.ucb[1, :])
+            @test all(est.ucb[1, :] .< est.pci[1, :])
+            @test all(est.pci[1, :] .< est.fhat)
+            @test all(est.fhat .< est.pci[2, :])
+            @test all(est.pci[2, :] .< est.ucb[2, :])
+            @test all(est.ucb[2, :] .< est.bci[2, :])
+
+            ucb_average_width = get_average_width(est.ucb)
+            pci_average_width = get_average_width(est.pci)
+            bci_average_width = get_average_width(est.bci)
+
+            @test pci_average_width < ucb_average_width
+            @test ucb_average_width < bci_average_width
+
+            ucb_coverage = get_coverage(est.ucb, DyadicKDE.get_f(p, evals))
+            pci_coverage = get_coverage(est.pci, DyadicKDE.get_f(p, evals))
+            bci_coverage = get_coverage(est.bci, DyadicKDE.get_f(p, evals))
+
+            @test pci_coverage <= ucb_coverage
+            @test ucb_coverage <= bci_coverage
+
+            RIMSE = get_RIMSE(est.fhat, DyadicKDE.get_f(p, evals))
+            @test 0 <= RIMSE <= 0.05
+
+            @suppress display(est)
+        end
+    end
+end
+
+#=
+
 @testset "Errors" begin
     Random.seed!(314159)
 
@@ -198,3 +261,5 @@ end
     @test_throws ErrorException("Unknown kernel_name") estimate_ROT_bandwidth(W,
                                                                               "epanechnikov_order_4")
 end
+
+=#

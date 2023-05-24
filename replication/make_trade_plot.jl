@@ -6,7 +6,7 @@ using DataFrames
 using LinearAlgebra
 using DyadicKDE
 
-include("./plot_helpers.jl")
+include(@__DIR__() * "/plot_helpers.jl")
 
 # set plot parameters
 linewidth = 1.0
@@ -32,13 +32,13 @@ for year1 in years
     yr1 = year1[3:4]
 
     # read data
-    W = DataFrame(CSV.File("data_W_" * year1 * ".csv"))
+    W = DataFrame(CSV.File(@__DIR__() * "/data_W_" * year1 * ".csv"))
     W = UpperTriangular(Array(W))
     h_ROT = estimate_ROT_bandwidth(W, "epanechnikov_order_2")
     W[W .== -Inf] .= -1e10
-    X0 = DataFrame(CSV.File("data_X_" * year0 * ".csv"))
+    X0 = DataFrame(CSV.File(@__DIR__() * "/data_X_" * year0 * ".csv"))
     X0 = Array(X0.GDP_bracket)
-    X1 = DataFrame(CSV.File("data_X_" * year1 * ".csv"))
+    X1 = DataFrame(CSV.File(@__DIR__() * "/data_X_" * year1 * ".csv"))
     X1 = Array(X1.GDP_bracket)
 
     # fit observed estimator
@@ -74,7 +74,7 @@ for year1 in years
         legend(handles=handles, loc="upper left")
         plt.ylabel("Density", labelpad=4.0)
         plt.tight_layout()
-        PyPlot.savefig("trade_plot_" * year1 * ".pdf")
+        PyPlot.savefig(@__DIR__() * "/trade_plot_" * year1 * ".pdf")
         close("all")
 
     else
@@ -127,7 +127,7 @@ for year1 in years
         legend(handles=handles, loc="upper left")
         plt.ylabel("Density", labelpad=4.0)
         plt.tight_layout()
-        PyPlot.savefig("trade_plot_" * year0 * "_" * year1 * ".pdf")
+        PyPlot.savefig(@__DIR__() * "/trade_plot_" * year0 * "_" * year1 * ".pdf")
         close("all")
     end
 end

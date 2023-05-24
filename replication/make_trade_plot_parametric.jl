@@ -6,7 +6,7 @@ using DataFrames
 using LinearAlgebra
 using DyadicKDE
 
-include("./plot_helpers.jl")
+include(@__DIR__() * "/plot_helpers.jl")
 
 # set plot parameters
 linewidth = 1.0
@@ -32,13 +32,13 @@ for year1 in years
     yr1 = year1[3:4]
 
     # read data
-    W = DataFrame(CSV.File("data_W_" * year1 * ".csv"))
+    W = DataFrame(CSV.File(@__DIR__() * "/data_W_" * year1 * ".csv"))
     W = UpperTriangular(Array(W))
     h_ROT = estimate_ROT_bandwidth(W, "epanechnikov_order_2")
     W[W .== -Inf] .= -1e10
 
     # TODO parametric fit
-    data0 = DataFrame(CSV.File("data_X_" * year0 * ".csv"))
+    data0 = DataFrame(CSV.File(@__DIR__() * "/data_X_" * year0 * ".csv"))
     X0 = Array(data0.GDP_bracket)
     gdp0 = Array(data0.GDP)
     brackets0 = Array(data0.GDP_bracket)
@@ -46,23 +46,25 @@ for year1 in years
     n = length(brackets0)
     breaks0 = [minimum(gdp0[i] for i in 1:n if brackets0[i] == j) for j in 1:X_levels]
     push!(breaks0, maximum(gdp0))
-    midpoints0 = [(breaks0[i] + breaks0[i+1]) / 2 for i in 1:X_levels]
+    midpoints0 = [(breaks0[i] + breaks0[i + 1]) / 2 for i in 1:X_levels]
     widths0 = diff(breaks0)
     mu0 = sum(log.(gdp0) / n)
-    sigma2_0 = sum(log.(gdp0).^2 / n) - mu0^2
-    phat0 = (2 * pi * sigma2_0)^(-1/2) * exp(-(log(midpoints0) - mu0)^2 / (2 * sigma2_0)) * widths0
+    sigma2_0 = sum(log.(gdp0) .^ 2 / n) - mu0^2
+    phat0 = (2 * pi * sigma2_0)^(-1 / 2) * exp.(-(log.(midpoints0) .- mu0).^2 ./ (2 * sigma2_0)) .*
+             widths0
 
-    data1 = DataFrame(CSV.File("data_X_" * year1 * ".csv"))
+    data1 = DataFrame(CSV.File(@__DIR__() * "/data_X_" * year1 * ".csv"))
     X1 = Array(data1.GDP_bracket)
     gdp1 = Array(data1.GDP)
     brackets1 = Array(data1.GDP_bracket)
     breaks1 = [minimum(gdp1[i] for i in 1:n if brackets1[i] == j) for j in 1:X_levels]
     push!(breaks1, maximum(gdp1))
-    midpoints1 = [(breaks1[i] + breaks1[i+1]) / 2 for i in 1:X_levels]
+    midpoints1 = [(breaks1[i] + breaks1[i + 1]) / 2 for i in 1:X_levels]
     widths1 = diff(breaks1)
     mu1 = sum(log.(gdp1) / n)
-    sigma2_1 = sum(log.(gdp1).^2 / n) - mu1^2
-    phat1 = (2 * pi * sigma2_1)^(-1/2) * exp(-(log(midpoints1) - mu1)^2 / (2 * sigma2_1)) * widths1
+    sigma2_1 = sum(log.(gdp1) .^ 2 / n) - mu1^2
+    phat1 = (2 * pi * sigma2_1)^(-1 / 2) * exp.(-(log.(midpoints1) .- mu1).^2 ./ (2 * sigma2_1)) .*
+             widths1
 
     # fit observed estimator
     est = DyadicKernelDensityEstimator(kernel_name, h_ROT, significance_level,
@@ -96,7 +98,7 @@ for year1 in years
         legend(handles=handles, loc="upper left")
         plt.ylabel("Density", labelpad=4.0)
         plt.tight_layout()
-        PyPlot.savefig("trade_plot_" * year1 * ".pdf")
+        PyPlot.savefig(@__DIR__() * "/trade_plot_parametric_" * year1 * ".pdf")
         close("all")
 
     else
@@ -150,7 +152,7 @@ for year1 in years
         legend(handles=handles, loc="upper left")
         plt.ylabel("Density", labelpad=4.0)
         plt.tight_layout()
-        PyPlot.savefig("trade_plot_" * year0 * "_" * year1 * ".pdf")
+        PyPlot.savefig(@__DIR__() * "/trade_plot_parametric_" * year0 * "_" * year1 * ".pdf")
         close("all")
     end
 end
