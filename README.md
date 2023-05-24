@@ -120,3 +120,6 @@ but can be accelerated for example by first starting Julia with
 `julia -t 8` to use 8 CPU threads.
 Exact results may vary due to Julia's
 [pseudorandom number generation](https://docs.julialang.org/en/v1/stdlib/Random/).
+
+For more information, refer to the README
+[README](https://github.com/WGUNDERWOOD/DyadicKDE.jl/tree/main/replication/README.md).
