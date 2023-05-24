@@ -35,6 +35,7 @@ for year1 in years
     W = DataFrame(CSV.File(@__DIR__() * "/data_W_" * year1 * ".csv"))
     W = UpperTriangular(Array(W))
     h_ROT = estimate_ROT_bandwidth(W, "epanechnikov_order_2")
+    println("h_ROT: ", h_ROT)
     W[W .== -Inf] .= -1e10
     X0 = DataFrame(CSV.File(@__DIR__() * "/data_X_" * year0 * ".csv"))
     X0 = Array(X0.GDP_bracket)

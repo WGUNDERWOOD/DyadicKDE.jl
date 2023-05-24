@@ -52,7 +52,7 @@ for year in years
 
     plt.ylim(0, 0.25)
     plt.xlim(0, 20)
-    plt.xlabel("log of GDP")
+    plt.xlabel("log GDP")
     plt.ylabel("Density", labelpad=4.0)
     plt.tight_layout()
     PyPlot.savefig(@__DIR__() * "/trade_gdp_" * year * ".pdf")
