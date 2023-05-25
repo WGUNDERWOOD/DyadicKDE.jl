@@ -10,7 +10,6 @@ include(REPDIR * "plot_helpers.jl")
 years = ["1995", "2000", "2005"]
 
 for year in years
-
     W = DataFrame(CSV.File(DATADIR * "data_W_" * year * ".csv"))
     W = UpperTriangular(Array(W))
     n = size(W, 1)
@@ -41,5 +40,4 @@ for year in years
     println("Average degree: ", av_degree)
     println("Clustering coefficient: ", clustering_coeff)
     println()
-
 end

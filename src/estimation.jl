@@ -205,7 +205,9 @@ function estimate_Sigmahatplus(Sigmahat::Symmetric{Float64}, sdp_solver::String)
 
         # solve optimization problem
         if sdp_solver == "mosek"
+            # COV_EXCL_START
             solve!(problem, Mosek.Optimizer, silent_solver=true)
+            # COV_EXCL_STOP
         elseif sdp_solver == "cosmo"
             solve!(problem, COSMO.Optimizer, silent_solver=true)
         else

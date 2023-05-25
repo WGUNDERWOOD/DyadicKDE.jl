@@ -52,8 +52,9 @@ for year1 in years
     widths0 = diff(breaks0)
     mu0 = sum(log.(gdp0) / n)
     sigma2_0 = sum(log.(gdp0) .^ 2 / n) - mu0^2
-    phat0 = (2 * pi * sigma2_0)^(-1 / 2) * exp.(-(log.(midpoints0) .- mu0).^2 ./ (2 * sigma2_0)) .*
-             widths0
+    phat0 = (2 * pi * sigma2_0)^(-1 / 2) *
+            exp.(-(log.(midpoints0) .- mu0) .^ 2 ./
+                 (2 * sigma2_0)) .* widths0
 
     data1 = DataFrame(CSV.File(DATADIR * "data_X_" * year1 * ".csv"))
     X1 = Array(data1.GDP_bracket)
@@ -65,8 +66,9 @@ for year1 in years
     widths1 = diff(breaks1)
     mu1 = sum(log.(gdp1) / n)
     sigma2_1 = sum(log.(gdp1) .^ 2 / n) - mu1^2
-    phat1 = (2 * pi * sigma2_1)^(-1 / 2) * exp.(-(log.(midpoints1) .- mu1).^2 ./ (2 * sigma2_1)) .*
-             widths1
+    phat1 = (2 * pi * sigma2_1)^(-1 / 2) *
+            exp.(-(log.(midpoints1) .- mu1) .^ 2 ./
+                 (2 * sigma2_1)) .* widths1
 
     # fit observed estimator
     est = DyadicKernelDensityEstimator(kernel_name, h_ROT, significance_level,

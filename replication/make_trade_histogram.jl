@@ -40,13 +40,13 @@ for year in years
 
     # parametric MLE fit log(gdp) ~ Normal
     mu = sum(log.(gdp) / n)
-    sigma2 = sum(log.(gdp).^2 / n) - mu^2
+    sigma2 = sum(log.(gdp) .^ 2 / n) - mu^2
     x_evals = range(0, 20, step=0.1)
-    para = (2 * pi * sigma2)^(-1/2) * exp.(-(x_evals .- mu).^2 / (2 * sigma2))
+    para = (2 * pi * sigma2)^(-1 / 2) * exp.(-(x_evals .- mu) .^ 2 / (2 * sigma2))
 
     fig, ax = plt.subplots(figsize=(4, 4))
     ax.hist(log.(gdp), log.(breaks), density=true, color="lightgray", linewidth=0.5,
-           edgecolor="black", label="Histogram")
+            edgecolor="black", label="Histogram")
     ax.plot(x_evals, para, color="black", linewidth=1, label="Normal")
 
     plt.legend()
@@ -58,5 +58,4 @@ for year in years
     plt.tight_layout()
     PyPlot.savefig(PLOTDIR * "trade_gdp_" * year * ".pdf")
     close("all")
-
 end
