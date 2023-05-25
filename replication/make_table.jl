@@ -1,12 +1,9 @@
-# generate the table found in
-# https://arxiv.org/abs/2201.05967
-
 using DyadicKDE
 
 # specify parameters
 n_data = 3000
 n_evals = 50
-n_repeats = 2000
+n_repeats = 2
 degeneracies = ["total", "partial", "none"]
 kernel_names = ["epanechnikov_order_2", "epanechnikov_order_4"]
 evals = collect(range(-2.0, stop=2.0, length=n_evals))

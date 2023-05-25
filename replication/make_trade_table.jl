@@ -1,15 +1,17 @@
-# generate the trade network summary plots found in
-# https://arxiv.org/abs/2201.05967
-
 using CSV
 using LinearAlgebra
 using DataFrames
+
+REPDIR = @__DIR__() * "/"
+DATADIR = REPDIR * "data/"
+
+include(REPDIR * "plot_helpers.jl")
 
 years = ["1995", "2000", "2005"]
 
 for year in years
 
-    W = DataFrame(CSV.File(@__DIR__() * "/data_W_" * year * ".csv"))
+    W = DataFrame(CSV.File(DATADIR * "data_W_" * year * ".csv"))
     W = UpperTriangular(Array(W))
     n = size(W, 1)
     edges = Int(sum(W + W' .> -Inf) / 2)

@@ -1,12 +1,13 @@
-# generate the trade plots found in
-# https://arxiv.org/abs/2201.05967
-
 using CSV
 using DataFrames
 using LinearAlgebra
 using DyadicKDE
 
-include(@__DIR__() * "/plot_helpers.jl")
+REPDIR = @__DIR__() * "/"
+PLOTDIR = REPDIR * "plots/"
+DATADIR = REPDIR * "data/"
+
+include(REPDIR * "plot_helpers.jl")
 
 # set plot parameters
 linewidth = 1.0
@@ -32,14 +33,14 @@ for year1 in years
     yr1 = year1[3:4]
 
     # read data
-    W = DataFrame(CSV.File(@__DIR__() * "/data_W_" * year1 * ".csv"))
+    W = DataFrame(CSV.File(DATADIR * "data_W_" * year1 * ".csv"))
     W = UpperTriangular(Array(W))
     h_ROT = estimate_ROT_bandwidth(W, "epanechnikov_order_2")
     println("h_ROT: ", h_ROT)
     W[W .== -Inf] .= -1e10
 
     # parametric estimation
-    data0 = DataFrame(CSV.File(@__DIR__() * "/data_X_" * year0 * ".csv"))
+    data0 = DataFrame(CSV.File(DATADIR * "data_X_" * year0 * ".csv"))
     X0 = Array(data0.GDP_bracket)
     gdp0 = Array(data0.GDP)
     brackets0 = Array(data0.GDP_bracket)
@@ -54,7 +55,7 @@ for year1 in years
     phat0 = (2 * pi * sigma2_0)^(-1 / 2) * exp.(-(log.(midpoints0) .- mu0).^2 ./ (2 * sigma2_0)) .*
              widths0
 
-    data1 = DataFrame(CSV.File(@__DIR__() * "/data_X_" * year1 * ".csv"))
+    data1 = DataFrame(CSV.File(DATADIR * "data_X_" * year1 * ".csv"))
     X1 = Array(data1.GDP_bracket)
     gdp1 = Array(data1.GDP)
     brackets1 = Array(data1.GDP_bracket)
@@ -99,7 +100,7 @@ for year1 in years
         legend(handles=handles, loc="upper left")
         plt.ylabel("Density", labelpad=4.0)
         plt.tight_layout()
-        PyPlot.savefig(@__DIR__() * "/trade_plot_parametric_" * year1 * ".pdf")
+        PyPlot.savefig(PLOTDIR * "trade_plot_parametric_" * year1 * ".pdf")
         close("all")
 
     else
@@ -153,7 +154,7 @@ for year1 in years
         legend(handles=handles, loc="upper left")
         plt.ylabel("Density", labelpad=4.0)
         plt.tight_layout()
-        PyPlot.savefig(@__DIR__() * "/trade_plot_parametric_" * year0 * "_" * year1 * ".pdf")
+        PyPlot.savefig(PLOTDIR * "trade_plot_parametric_" * year0 * "_" * year1 * ".pdf")
         close("all")
     end
 end

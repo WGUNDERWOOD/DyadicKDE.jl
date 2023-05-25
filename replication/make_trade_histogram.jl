@@ -1,12 +1,13 @@
-# generate the trade plots found in
-# https://arxiv.org/abs/2201.05967
-
 using CSV
 using DataFrames
 using LinearAlgebra
 using DyadicKDE
 
-include(@__DIR__() * "/plot_helpers.jl")
+REPDIR = @__DIR__() * "/"
+PLOTDIR = REPDIR * "plots/"
+DATADIR = REPDIR * "data/"
+
+include(REPDIR * "plot_helpers.jl")
 
 # set plot parameters
 linewidth = 1.0
@@ -27,7 +28,7 @@ years = ["1995", "2000", "2005"]
 for year in years
     println("Year: ", year)
 
-    data = DataFrame(CSV.File(@__DIR__() * "/data_X_" * year * ".csv"))
+    data = DataFrame(CSV.File(DATADIR * "data_X_" * year * ".csv"))
     gdp = Array(data.GDP)
     brackets = Array(data.GDP_bracket)
     n = length(brackets)
@@ -55,7 +56,7 @@ for year in years
     plt.xlabel("log GDP")
     plt.ylabel("Density", labelpad=4.0)
     plt.tight_layout()
-    PyPlot.savefig(@__DIR__() * "/trade_gdp_" * year * ".pdf")
+    PyPlot.savefig(PLOTDIR * "trade_gdp_" * year * ".pdf")
     close("all")
 
 end
