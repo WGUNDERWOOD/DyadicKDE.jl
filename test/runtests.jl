@@ -18,8 +18,6 @@ function trapezium_integrate(f::Vector{Float64}, x::Vector{Float64})
     return area
 end
 
-#=
-
 # Aqua tests
 Aqua.test_ambiguities(DyadicKDE)
 Aqua.test_unbound_args(DyadicKDE)
@@ -183,8 +181,6 @@ end
     end
 end
 
-=#
-
 @testset "ParametricCounterfactual" begin
     Random.seed!(314159)
     n_data = 50
@@ -242,8 +238,6 @@ end
     end
 end
 
-#=
-
 @testset "Errors" begin
     Random.seed!(314159)
 
@@ -261,5 +255,3 @@ end
     @test_throws ErrorException("Unknown kernel_name") estimate_ROT_bandwidth(W,
                                                                               "epanechnikov_order_4")
 end
-
-=#
