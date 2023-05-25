@@ -1,8 +1,10 @@
-# generate the distribution plots found in
-# https://arxiv.org/abs/2201.05967
-
 using DyadicKDE
-include("./plot_helpers.jl")
+
+REPDIR = @__DIR__() * "/"
+PLOTDIR = REPDIR * "plots/"
+DATADIR = REPDIR * "data/"
+
+include(REPDIR * "plot_helpers.jl")
 
 # specify parameters
 n_evals = 100
@@ -44,6 +46,6 @@ for degen in degeneracies
     legend(handles=handles, loc="upper left")
     plt.ylabel("Density", labelpad=4.0)
     plt.tight_layout()
-    PyPlot.savefig("distribution_plot_$degen.pdf")
+    PyPlot.savefig(PLOTDIR * "distribution_plot_$degen.pdf")
     close("all")
 end

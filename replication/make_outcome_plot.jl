@@ -1,8 +1,10 @@
-# generate the typical outcome plots found in
-# https://arxiv.org/abs/2201.05967
-
 using DyadicKDE
-include("./plot_helpers.jl")
+
+REPDIR = @__DIR__() * "/"
+PLOTDIR = REPDIR * "plots/"
+DATADIR = REPDIR * "data/"
+
+include(REPDIR * "plot_helpers.jl")
 
 # specify parameters
 n_data = 100
@@ -78,6 +80,6 @@ for est in results
     legend(handles=handles, loc="upper left")
     plt.ylabel("Density", labelpad=4.0)
     plt.tight_layout()
-    PyPlot.savefig("outcome_plot_$degen.pdf")
+    PyPlot.savefig(PLOTDIR * "outcome_plot_$degen.pdf")
     close("all")
 end
