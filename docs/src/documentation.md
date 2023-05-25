@@ -11,7 +11,7 @@ Pages   = ["estimation.jl", "kernels.jl"]
 
 ```@autodocs
 Modules = [DyadicKDE]
-Pages   = ["counterfactual.jl"]
+Pages   = ["counterfactual.jl, parametric_counterfactual.jl"]
 ```
 
 ## Helper functions

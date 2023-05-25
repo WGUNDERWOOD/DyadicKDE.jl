@@ -99,13 +99,5 @@ display(est.ucb)
 
 ## Paper replication
 
-The results of the empirical studies presented in
-[Cattaneo, Feng and Underwood, 2022](https://arxiv.org/abs/2201.05967)
-can be replicated by running the Julia scripts found in the
-[replication](https://github.com/WGUNDERWOOD/DyadicKDE.jl/tree/main/replication/)
-directory.
-The `make_table.jl` script may take several hours to run,
-but can be accelerated for example by first starting Julia with
-`julia -t 8` to use 8 CPU threads.
-Exact results may vary due to Julia's
-[pseudorandom number generation](https://docs.julialang.org/en/v1/stdlib/Random/).
+Please refer to the 
+[replication README](https://github.com/WGUNDERWOOD/DyadicKDE.jl/tree/main/replication/README.md).
