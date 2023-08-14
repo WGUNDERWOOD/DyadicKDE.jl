@@ -3,8 +3,8 @@
 The results of the empirical studies presented in
 [Cattaneo, Feng and Underwood, 2022](https://arxiv.org/abs/2201.05967)
 can be replicated by running the Julia scripts found in this directory.
-Provided in this README are details of each script, along with a description
-of the DOTS used for the empirical studies.
+Provided in this document are details of each script, along with a description
+of the DOTS data used for the empirical studies.
 
 ## Julia scripts
 
