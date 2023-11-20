@@ -25,7 +25,6 @@ Aqua.test_undefined_exports(DyadicKDE)
 Aqua.test_project_extras(DyadicKDE)
 Aqua.test_stale_deps(DyadicKDE, ignore=[:Aqua, :Suppressor, :JuliaFormatter])
 Aqua.test_deps_compat(DyadicKDE)
-Aqua.test_project_toml_formatting(DyadicKDE)
 
 @testset verbose = true "JuliaFormatter" begin
     @test JuliaFormatter.format(DyadicKDE, overwrite=false)
