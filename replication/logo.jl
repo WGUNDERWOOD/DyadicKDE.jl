@@ -32,8 +32,8 @@ plt.fill(xs_outer, ys_outer, c=outer_col, lw=0)
 # upper curve
 n = 100
 xs = range(0, 1, length=n)
-ys = [0.6 * (1.2 * x - 0.63) ** 3 + 0.67 - 0.3 * x
-            for x in xs]
+ys = [0.6 * (1.2 * x - 0.63)^3 + 0.67 - 0.3 * x
+      for x in xs]
 all_xs = [[0.5, 0]; xs; [1, 0.5]]
 upper_ys = [[0, 0]; ys; [0, 0]]
 plt.plot(all_xs, upper_ys, c=col_dark, lw=lw)
@@ -41,8 +41,8 @@ plt.plot(all_xs, upper_ys, c=col_dark, lw=lw)
 # lower curve
 n = 100
 a = 0.25
-ys = [0.3 * (1.2 * (x - a) - 0.63) ** 3 + 0.48 - 0.3 * (x - a)
-            for x in xs]
+ys = [0.3 * (1.2 * (x - a) - 0.63)^3 + 0.48 - 0.3 * (x - a)
+      for x in xs]
 all_xs = [[0.5, 0]; xs; [1, 0.5]]
 lower_ys = [[0, 0]; ys; [0, 0]]
 plt.plot(all_xs, lower_ys, c=col_dark, lw=lw)
