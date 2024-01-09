@@ -1,17 +1,13 @@
+# DyadicKDE.jl <img src="docs/src/assets/logo.svg" alt="DyadicKDE logo" align="right" width=200 />
+
+Dyadic kernel density estimation in Julia.
+
 [![Build Status](https://github.com/WGUNDERWOOD/DyadicKDE.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/WGUNDERWOOD/DyadicKDE.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/WGUNDERWOOD/DyadicKDE.jl/blob/main/LICENSE)
 [![codecov](https://codecov.io/gh/WGUNDERWOOD/DyadicKDE.jl/branch/main/graph/badge.svg?token=JLN7VK2LT8)](https://codecov.io/gh/WGUNDERWOOD/DyadicKDE.jl)
 [![docs stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://WGUNDERWOOD.github.io/DyadicKDE.jl/stable)
 [![docs dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://WGUNDERWOOD.github.io/DyadicKDE.jl/dev)
 [![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
-
-# DyadicKDE.jl
-
-Dyadic kernel density estimation in Julia.
-
-[Documentation](https://wgunderwood.github.io/DyadicKDE.jl/stable/)
-built with
-[Documenter.jl](https://juliadocs.github.io/Documenter.jl/stable/).
 
 ## Introduction
 
