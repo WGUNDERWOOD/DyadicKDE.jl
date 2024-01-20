@@ -55,21 +55,21 @@ v2 = [0.35, 0.3]
 v3 = [0.81, 0.13]
 
 # plot network edges
-plt.plot([v1[0], v2[0]], [v1[1], v2[1]], c=col_dark, lw=7, zorder=10)
-plt.plot([v2[0], v3[0]], [v2[1], v3[1]], c=col_dark, lw=7, zorder=10)
-plt.plot([v3[0], v1[0]], [v3[1], v1[1]], c=col_dark, lw=7, zorder=10)
+plt.plot([v1[1], v2[1]], [v1[2], v2[2]], c=col_dark, lw=7, zorder=10)
+plt.plot([v2[1], v3[1]], [v2[2], v3[2]], c=col_dark, lw=7, zorder=10)
+plt.plot([v3[1], v1[1]], [v3[2], v1[2]], c=col_dark, lw=7, zorder=10)
 
 # plot network node buffers
 r = 4000
-ax.scatter([v1[0]], [v1[1]], s=r, lw=0, fc=col_light, zorder=11)
-ax.scatter([v2[0]], [v2[1]], s=r, lw=0, fc=col_light, zorder=11)
-ax.scatter([v3[0]], [v3[1]], s=r, lw=0, fc=col_light, zorder=11)
+ax.scatter([v1[1]], [v1[2]], s=r, lw=0, fc=col_light, zorder=11)
+ax.scatter([v2[1]], [v2[2]], s=r, lw=0, fc=col_light, zorder=11)
+ax.scatter([v3[1]], [v3[2]], s=r, lw=0, fc=col_light, zorder=11)
 
 # plot network nodes
 r = 2000
-ax.scatter([v1[0]], [v1[1]], s=r, lw=6, fc=col_2, ec=col_dark, zorder=12)
-ax.scatter([v2[0]], [v2[1]], s=r, lw=6, fc=col_3, ec=col_dark, zorder=12)
-ax.scatter([v3[0]], [v3[1]], s=r, lw=6, fc=col_4, ec=col_dark, zorder=12)
+ax.scatter([v1[1]], [v1[2]], s=r, lw=6, fc=col_2, ec=col_dark, zorder=12)
+ax.scatter([v2[1]], [v2[2]], s=r, lw=6, fc=col_3, ec=col_dark, zorder=12)
+ax.scatter([v3[1]], [v3[2]], s=r, lw=6, fc=col_4, ec=col_dark, zorder=12)
 
 # save
 plt.savefig("logo.svg", dpi=1000, transparent=True)
