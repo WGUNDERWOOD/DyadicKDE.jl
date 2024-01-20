@@ -4,8 +4,6 @@ using LinearAlgebra
 using Distributions
 using Statistics
 using Convex
-using Mosek
-using MosekTools
 using COSMO
 
 include("kernels.jl")
