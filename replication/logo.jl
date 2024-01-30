@@ -72,5 +72,5 @@ ax.scatter([v2[1]], [v2[2]], s=r, lw=6, fc=col_3, ec=col_dark, zorder=12)
 ax.scatter([v3[1]], [v3[2]], s=r, lw=6, fc=col_4, ec=col_dark, zorder=12)
 
 # save
-plt.savefig("logo.svg", dpi=1000, transparent=True)
+plt.savefig("../docs/src/assets/logo.svg", dpi=1000, transparent=true)
 plt.close("all")

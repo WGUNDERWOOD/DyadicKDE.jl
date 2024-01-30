@@ -1,4 +1,5 @@
 all:
+	@mkdir -p plots data
 	@julia --project=".." --color=yes make_distribution_plot.jl
 	@julia --project=".." --color=yes make_outcome_plot.jl
 	@julia --project=".." --color=yes make_table.jl
