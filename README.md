@@ -106,5 +106,5 @@ display(est.ucb)
 
 ## Paper replication
 
-Please refer to the 
+Please refer to the
 [replication README](https://github.com/WGUNDERWOOD/DyadicKDE.jl/tree/main/replication/README.md).

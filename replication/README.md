@@ -8,7 +8,7 @@ of the DOTS data used for the empirical studies.
 
 ## Julia scripts
 
-The Julia scripts can be run by executing the shell script `RUNME.sh`.
+The Julia scripts can be run using the `Makefile`.
 
 ### `make_distribution_plot.jl`
 
