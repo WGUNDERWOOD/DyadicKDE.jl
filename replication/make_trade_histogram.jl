@@ -17,7 +17,7 @@ e = 0.22
 n_evals = 10
 kernel_name = "epanechnikov_order_4"
 evals = collect(range(-10.0, stop=10.0, length=n_evals))
-sdp_solver = "mosek"
+sdp_solver = "cosmo"
 n_resample = 10000
 significance_level = 0.05
 
