@@ -37,14 +37,15 @@ for degen in degeneracies
             color="black", linewidth=linewidth, linestyle=(0, (1, 1)))
 
     # save plot
-    PyPlot.xlabel("Evaluation point, \$w\$")
+    PyPlot.xlabel("Evaluation point, \$w\$", fontsize=13)
     plt.ylim(y_lim)
     x_min = minimum(evals)
     x_max = maximum(evals)
     plt.xlim((x_min, x_max))
-    plt.yticks(range(0.0, stop=0.4, step=0.1))
+    plt.yticks(range(0.0, stop=0.4, step=0.1), fontsize=12)
+    plt.xticks(fontsize=12)
     legend(handles=handles, loc="upper left")
-    plt.ylabel("Density", labelpad=4.0)
+    plt.ylabel("Density", labelpad=4.0, fontsize=13)
     plt.tight_layout()
     PyPlot.savefig(PLOTDIR * "distribution_plot_$degen.pdf")
     close("all")

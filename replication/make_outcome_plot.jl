@@ -71,14 +71,15 @@ for est in results
                               est.pci[2, :], 10, "black", linewidth, "-")
 
     # save plot
-    PyPlot.xlabel("Evaluation point, \$w\$")
+    PyPlot.xlabel("Evaluation point, \$w\$", fontsize=13)
     plt.ylim(y_lim)
     x_min = minimum(est.evals)
     x_max = maximum(est.evals)
     plt.xlim((x_min, x_max))
-    plt.yticks(range(0.0, stop=0.4, step=0.1))
+    plt.yticks(range(0.0, stop=0.4, step=0.1), fontsize=12)
+    plt.xticks(fontsize=12)
     legend(handles=handles, loc="upper left")
-    plt.ylabel("Density", labelpad=4.0)
+    plt.ylabel("Density", labelpad=4.0, fontsize=13)
     plt.tight_layout()
     PyPlot.savefig(PLOTDIR * "outcome_plot_$degen.pdf")
     close("all")
