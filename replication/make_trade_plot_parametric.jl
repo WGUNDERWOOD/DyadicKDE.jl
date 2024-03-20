@@ -155,7 +155,7 @@ for year1 in years
         plt.yticks(range(0.0, stop=0.1, step=0.02), fontsize=11)
         plt.xticks(fontsize=11)
         legend(handles=handles, loc="upper left", ncol=2, columnspacing=1,
-              handletextpad=0.35)
+               handletextpad=0.35)
         plt.ylabel("Density", labelpad=4.0, fontsize=12)
         plt.tight_layout()
         PyPlot.savefig(PLOTDIR * "trade_plot_parametric_" * year0 * "_" * year1 * ".pdf")
