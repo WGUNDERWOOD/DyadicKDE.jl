@@ -44,17 +44,19 @@ for year in years
     x_evals = range(0, 20, step=0.1)
     para = (2 * pi * sigma2)^(-1 / 2) * exp.(-(x_evals .- mu) .^ 2 / (2 * sigma2))
 
-    fig, ax = plt.subplots(figsize=(4, 4))
+    fig, ax = plt.subplots(figsize=(3, 3))
     ax.hist(log.(gdp), log.(breaks), density=true, color="lightgray", linewidth=0.5,
             edgecolor="black", label="Histogram")
-    ax.plot(x_evals, para, color="black", linewidth=1, label="Normal")
+    ax.plot(x_evals, para, color="black", linewidth=1, label="Normal MLE")
 
     plt.legend()
 
-    plt.ylim(0, 0.25)
+    plt.ylim(0, 0.31)
     plt.xlim(0, 20)
-    plt.xlabel("log GDP")
-    plt.ylabel("Density", labelpad=4.0)
+    plt.xlabel("log GDP", fontsize=12)
+    plt.ylabel("Density", labelpad=4.0, fontsize=12)
+    plt.xticks(fontsize=11)
+    plt.yticks(range(start=0, stop=0.3, step=0.1), fontsize=11)
     plt.tight_layout()
     PyPlot.savefig(PLOTDIR * "trade_gdp_" * year * ".pdf")
     close("all")

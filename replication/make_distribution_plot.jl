@@ -29,7 +29,7 @@ for degen in degeneracies
     Var_f_given_A = generate_Var_f_given_A(evals, p)
 
     # plot f
-    fig, ax = plt.subplots(figsize=(4, 4))
+    fig, ax = plt.subplots(figsize=(3, 3))
     ax.plot(evals, f, color="black", linewidth=linewidth)
 
     # plot Var_f_given_A
@@ -37,15 +37,15 @@ for degen in degeneracies
             color="black", linewidth=linewidth, linestyle=(0, (1, 1)))
 
     # save plot
-    PyPlot.xlabel("Evaluation point, \$w\$", fontsize=13)
+    PyPlot.xlabel("Evaluation point, \$w\$", fontsize=12)
     plt.ylim(y_lim)
     x_min = minimum(evals)
     x_max = maximum(evals)
     plt.xlim((x_min, x_max))
-    plt.yticks(range(0.0, stop=0.4, step=0.1), fontsize=12)
-    plt.xticks(fontsize=12)
+    plt.yticks(range(0.0, stop=0.4, step=0.1), fontsize=11)
+    plt.xticks(fontsize=11)
     legend(handles=handles, loc="upper left")
-    plt.ylabel("Density", labelpad=4.0, fontsize=13)
+    plt.ylabel("Density", labelpad=4.0, fontsize=12)
     plt.tight_layout()
     PyPlot.savefig(PLOTDIR * "distribution_plot_$degen.pdf")
     close("all")

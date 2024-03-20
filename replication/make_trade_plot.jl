@@ -11,7 +11,7 @@ include(REPDIR * "plot_helpers.jl")
 
 # set plot parameters
 linewidth = 1.0
-y_lim = [-0.003, 0.11]
+y_lim = [-0.003, 0.105]
 e = 0.22
 
 # estimation parameters
@@ -55,26 +55,27 @@ for year1 in years
         # legend observed
         handle_fhat = PyPlot.matplotlib.lines.Line2D([0], [0], color="k", lw=linewidth,
                                                      linestyle=(0, (1, 1)),
-                                                     label="\$\\widehat f_W^{\\," * yr1 * "}(w)\$")
+                                                     label="\$\\hat f_W^{" * yr1 * "}(w)\$")
         handle_ucb = PyPlot.matplotlib.patches.Patch(facecolor="lightgray", edgecolor="lightgray",
-                                                     label="UCB for \$f_W^{" * yr1 * "}(w)\$")
+                                                     label="UCB")
         handles = [handle_fhat, handle_ucb]
 
         # plot observed
-        fig, ax = plt.subplots(figsize=(4, 4))
+        fig, ax = plt.subplots(figsize=(3, 3))
         ax.plot(est.evals, est.fhat,
                 color="black", linewidth=linewidth, linestyle=(0, (1, 1)))
         ax.fill_between(est.evals, est.ucb[1, :], est.ucb[2, :],
                         color="lightgray", linewidth=0.0)
 
-        PyPlot.xlabel("Bilateral trade volume")
+        PyPlot.xlabel("Bilateral trade volume", fontsize=12)
         plt.ylim(y_lim)
         x_min = minimum(est.evals)
         x_max = maximum(est.evals)
         plt.xlim((x_min, x_max))
-        plt.yticks(range(0.0, stop=0.1, step=0.02))
+        plt.yticks(range(0.0, stop=0.1, step=0.02), fontsize=11)
+        plt.xticks(fontsize=11)
         legend(handles=handles, loc="upper left")
-        plt.ylabel("Density", labelpad=4.0)
+        plt.ylabel("Density", labelpad=4.0, fontsize=12)
         plt.tight_layout()
         PyPlot.savefig(PLOTDIR * "trade_plot_" * year1 * ".pdf")
         close("all")
@@ -92,21 +93,20 @@ for year1 in years
         # legend cf
         handle_fhat = PyPlot.matplotlib.lines.Line2D([0], [0], color="k", lw=linewidth,
                                                      linestyle=(0, (1, 1)),
-                                                     label="\$\\widehat f_W^{\\," * yr1 * "}(w)\$")
+                                                     label="\$\\hat f_W^{" * yr1 * "}(w)\$")
         handle_ucb = PyPlot.matplotlib.patches.Patch(facecolor="lightgray", edgecolor="lightgray",
-                                                     label="UCB for \$f_W^{" * yr1 * "}(w)\$")
+                                                     label="UCB")
         handle_fhat_cf = PyPlot.matplotlib.lines.Line2D([0], [0], color="royalblue", lw=linewidth,
                                                         linestyle=(0, (1, 1)),
-                                                        label="\$\\widehat f_W^{\\," * yr1 *
+                                                        label="\$\\hat f_W^{" * yr1 *
                                                               "\\triangleright" * yr0 * "}(w)\$")
         handle_ucb_cf = PyPlot.matplotlib.patches.Patch(facecolor="cornflowerblue",
                                                         edgecolor="cornflowerblue", alpha=0.4,
-                                                        label="UCB for \$f_W^{" * yr1 *
-                                                              "\\triangleright" * yr0 * "}(w)\$")
-        handles = [handle_fhat, handle_fhat_cf, handle_ucb, handle_ucb_cf]
+                                                        label="UCB")
+        handles = [handle_fhat, handle_ucb, handle_fhat_cf, handle_ucb_cf]
 
         # plot counterfactual
-        fig, ax = plt.subplots(figsize=(4, 4))
+        fig, ax = plt.subplots(figsize=(3, 3))
 
         # est
         ax.plot(est.evals, est.fhat,
@@ -120,14 +120,16 @@ for year1 in years
         ax.fill_between(est_cf.evals, est_cf.ucb[1, :], est_cf.ucb[2, :],
                         color="cornflowerblue", linewidth=0.0, alpha=0.3)
 
-        PyPlot.xlabel("Bilateral trade volume")
+        PyPlot.xlabel("Bilateral trade volume", fontsize=12)
         plt.ylim(y_lim)
         x_min = minimum(est_cf.evals)
         x_max = maximum(est_cf.evals)
         plt.xlim((x_min, x_max))
-        plt.yticks(range(0.0, stop=0.1, step=0.02))
-        legend(handles=handles, loc="upper left")
-        plt.ylabel("Density", labelpad=4.0)
+        plt.yticks(range(0.0, stop=0.1, step=0.02), fontsize=11)
+        plt.xticks(fontsize=11)
+        legend(handles=handles, loc="upper left", ncol=2, columnspacing=1,
+              handletextpad=0.35)
+        plt.ylabel("Density", labelpad=4.0, fontsize=12)
         plt.tight_layout()
         PyPlot.savefig(PLOTDIR * "trade_plot_" * year0 * "_" * year1 * ".pdf")
         close("all")
