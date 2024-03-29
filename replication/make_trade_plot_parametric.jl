@@ -81,7 +81,7 @@ for year1 in years
         # legend observed
         handle_fhat = PyPlot.matplotlib.lines.Line2D([0], [0], color="k", lw=linewidth,
                                                      linestyle=(0, (1, 1)),
-                                                     label="\$\\hat f_W^{\\," * yr1 * "}(w)\$")
+                                                     label="\$\\hat f_W^{" * yr1 * "}(w)\$")
         handle_ucb = PyPlot.matplotlib.patches.Patch(facecolor="lightgray", edgecolor="lightgray",
                                                      label="UCB")
         handles = [handle_fhat, handle_ucb]
@@ -120,12 +120,12 @@ for year1 in years
         # legend cf
         handle_fhat = PyPlot.matplotlib.lines.Line2D([0], [0], color="k", lw=linewidth,
                                                      linestyle=(0, (1, 1)),
-                                                     label="\$\\hat f_W^{\\," * yr1 * "}(w)\$")
+                                                     label="\$\\hat f_W^{" * yr1 * "}(w)\$")
         handle_ucb = PyPlot.matplotlib.patches.Patch(facecolor="lightgray", edgecolor="lightgray",
                                                      label="UCB")
         handle_fhat_cf = PyPlot.matplotlib.lines.Line2D([0], [0], color="royalblue", lw=linewidth,
                                                         linestyle=(0, (1, 1)),
-                                                        label="\$\\hat f_W^{\\," * yr1 *
+                                                        label="\$\\hat f_W^{" * yr1 *
                                                               "\\triangleright" * yr0 * "}(w)\$")
         handle_ucb_cf = PyPlot.matplotlib.patches.Patch(facecolor="cornflowerblue",
                                                         edgecolor="cornflowerblue", alpha=0.4,
